@@ -1,3 +1,10 @@
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from typing import Optional, Tuple
+
 def calculate_intersection(df: pd.DataFrame) -> Tuple[Optional[float], Optional[float], Optional[dict]]:
     """Encuentra el punto de quiebre óptimo y el intercepto entre dos tendencias."""
     if len(df) < 4: return None, None, None
@@ -56,4 +63,3 @@ def plot_srt(df: pd.DataFrame):
         
     fig.update_layout(template="plotly_white", xaxis_title="Tasa (bbl/d)", yaxis_title="Presión (psi)")
     return fig
-
