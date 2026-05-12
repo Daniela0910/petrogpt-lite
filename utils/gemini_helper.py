@@ -2,7 +2,8 @@ import os
 import streamlit as st
 import google.generativeai as genai
 
-MODEL_NAME = "models/gemini-1.5-flash"
+# Usamos el nombre del modelo más actualizado y compatible
+MODEL_NAME = "gemini-1.5-flash-latest"
 
 def generate_response(prompt: str) -> str:
     """
@@ -16,8 +17,12 @@ def generate_response(prompt: str) -> str:
 
     try:
         genai.configure(api_key=api_key)
+        # Intentamos inicializar el modelo
         model = genai.GenerativeModel(model_name=MODEL_NAME)
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
-        return f"🤖 Error: {str(e)}"
+        error_msg = str(e)
+        if "404" in error_msg:
+             return f"🤖 Error 404: El modelo '{MODEL_NAME}' no fue encontrado. Verifica la cuota o el nombre en Google AI Studio."
+        return f"🤖 Error: {error_msg}"
