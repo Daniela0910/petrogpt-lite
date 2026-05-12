@@ -73,7 +73,7 @@ def tab_calculadoras():
 
 def tab_step_rate():
     st.header("📈 Analizador SRT")
-    file = st.file_uploader("Sube archivo SRT (CSV), las columnas deben estar marcadas como "time", "rate" y "pressure"", type=['csv'])
+    file = st.file_uploader("Sube archivo SRT (CSV), las columnas deben estar marcadas como time, rate y pressure", type=['csv'])
     if file:
         df, error = process_srt_data(file)
         if error: st.error(error)
