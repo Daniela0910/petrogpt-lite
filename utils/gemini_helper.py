@@ -6,7 +6,8 @@ try:
 except ImportError:
     HAS_COLAB_USERDATA = False
 
-MODEL_NAME = "gemini-1.5-flash"
+# Usamos el nombre calificado del modelo para evitar errores 404
+MODEL_NAME = "models/gemini-1.5-flash"
 
 def generate_response(prompt: str, user_api_key: str = None) -> str:
     """
@@ -29,7 +30,8 @@ def generate_response(prompt: str, user_api_key: str = None) -> str:
 
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(MODEL_NAME)
+        # Intentamos instanciar el modelo con el nombre corregido
+        model = genai.GenerativeModel(model_name=MODEL_NAME)
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
