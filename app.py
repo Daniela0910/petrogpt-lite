@@ -1,3 +1,4 @@
+%%writefile app.py
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -41,16 +42,35 @@ def tab_calculadoras():
     st.header("🔢 Calculadoras Técnicas")
     col1, col2 = st.columns(2)
     with col1:
-        with st.expander("🛢️ Gravedad API"):
+        with st.expander("🛢️ Gravedad API", expanded=True):
             density = st.number_input("Densidad (g/cm³)", 0.1, 2.0, 0.85, key="api_dens")
             if st.button("Calcular API"):
                 st.metric("Resultado", f"{calculate_api_gravity(density)}° API")
+        
+        with st.expander("📉 Drawdown"):
+            pr_dd = st.number_input("Presión de Yacimiento (psi)", value=3000.0, key="pr_dd")
+            pwf_dd = st.number_input("Presión Fluyente (psi)", value=2500.0, key="pwf_dd")
+            if st.button("Calcular Drawdown"):
+                st.metric("Drawdown", f"{calculate_drawdown(pr_dd, pwf_dd)} psi")
+
     with col2:
-        with st.expander("🚀 Índice de Productividad"):
-            q = st.number_input("Q (stb/d)", value=500.0)
+        with st.expander("🚀 Índice de Productividad (PI)", expanded=True):
+            q_pi = st.number_input("Caudal (stb/d)", value=500.0, key="q_pi")
+            pr_pi = st.number_input("Presión de Yacimiento (psi)", value=3000.0, key="pr_pi")
+            pwf_pi = st.number_input("Presión Fluyente (psi)", value=2500.0, key="pwf_pi")
             if st.button("Calcular PI"):
-                pi = calculate_productivity_index(q, 3000.0, 2500.0)
-                st.metric("PI", f"{pi} stb/d/psi")
+                pi = calculate_productivity_index(q_pi, pr_pi, pwf_pi)
+                if pi:
+                    st.metric("PI", f"{pi} stb/d/psi")
+                else:
+                    st.error("El drawdown debe ser mayor a 0")
+
+        with st.expander("📏 Gradiente de Presión"):
+            p_grad = st.number_input("Presión (psi)", value=1000.0, key="p_grad")
+            tvd_grad = st.number_input("TVD (ft)", value=2000.0, key="tvd_grad")
+            if st.button("Calcular Gradiente"):
+                grad = calculate_pressure_gradient(p_grad, tvd_grad)
+                st.metric("Gradiente", f"{grad} psi/ft")
 
 def tab_step_rate():
     st.header("📈 Analizador SRT")
@@ -69,4 +89,4 @@ def main():
     with t3: tab_step_rate()
 
 if __name__ == "__main__":
-    main()
+    main()"
