@@ -3,3 +3,4 @@ pandas
 plotly
 google-generativeai
 statsmodels
+scikit-learn
