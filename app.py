@@ -17,27 +17,23 @@ st.set_page_config(page_title="PetroGPT Lite", page_icon="🛢️", layout="wide
 
 def render_sidebar():
     with st.sidebar:
-        st.title("📌 Configuración")
-        api_key = st.text_input("Google API Key", type="password", help="Pega tu clave de Google AI Studio")
-        st.info("Asistente modular para ingeniería de petróleos.")
-        return api_key
+        st.title("📌 PetroGPT Lite")
+        st.info("Asistente inteligente interno para ingeniería de petróleos.")
+        st.divider()
+        st.caption("Acceso seguro: API Key configurada internamente.")
 
-def tab_chat_tecnico(api_key):
+def tab_chat_tecnico():
     st.header("🤖 Chat Técnico IA")
     if "messages" not in st.session_state:
         st.session_state.messages = []
     for msg in st.session_state.messages:
         st.chat_message(msg['role']).write(msg['content'])
-    
-    if prompt := st.chat_input("Consulta..."):
-        if not api_key:
-            st.warning("Por favor, ingresa tu API Key en la barra lateral.")
-            return
-        
+
+    if prompt := st.chat_input("Consulta técnica..."):
         st.session_state.messages.append({'role': 'user', 'content': prompt})
         st.chat_message("user").write(prompt)
         with st.spinner("Consultando..."):
-            res = generate_response(prompt, user_api_key=api_key)
+            res = generate_response(prompt)
             st.session_state.messages.append({'role': 'assistant', 'content': res})
             st.chat_message("assistant").write(res)
 
@@ -49,33 +45,26 @@ def tab_calculadoras():
             density = st.number_input("Densidad (g/cm³)", 0.1, 2.0, 0.85, key="api_dens")
             if st.button("Calcular API"):
                 st.metric("Resultado", f"{calculate_api_gravity(density)}° API")
-        with st.expander("📉 Drawdown"):
-            pr = st.number_input("Pr (psi)", value=3000.0)
-            pwf = st.number_input("Pwf (psi)", value=2500.0)
-            if st.button("Calcular DD"):
-                st.metric("Drawdown", f"{calculate_drawdown(pr, pwf)} psi")
     with col2:
         with st.expander("🚀 Índice de Productividad"):
             q = st.number_input("Q (stb/d)", value=500.0)
             if st.button("Calcular PI"):
-                pi = calculate_productivity_index(q, 3000.0, 2500.0) # Ejemplo simple
+                pi = calculate_productivity_index(q, 3000.0, 2500.0)
                 st.metric("PI", f"{pi} stb/d/psi")
 
 def tab_step_rate():
     st.header("📈 Analizador SRT")
-    file = st.file_uploader("Sube archivo SRT", type=['csv'])
+    file = st.file_uploader("Sube archivo SRT (CSV)", type=['csv'])
     if file:
         df, error = process_srt_data(file)
         if error: st.error(error)
         else:
-            c1, c2 = st.columns([1, 2])
-            with c1: st.dataframe(df)
-            with c2: st.plotly_chart(plot_srt(df), use_container_width=True)
+            st.plotly_chart(plot_srt(df), use_container_width=True)
 
 def main():
-    api_key = render_sidebar()
-    t1, t2, t3 = st.tabs(["💬 Chat", "🧮 Cálculos", "📂 SRT"])
-    with t1: tab_chat_tecnico(api_key)
+    render_sidebar()
+    t1, t2, t3 = st.tabs(["💬 Chat Técnico", "🧮 Cálculos", "📂 Analizador SRT"])
+    with t1: tab_chat_tecnico()
     with t2: tab_calculadoras()
     with t3: tab_step_rate()
 
