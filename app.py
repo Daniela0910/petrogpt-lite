@@ -132,7 +132,6 @@ def tab_calculadoras():
     
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
         st.subheader("🛢️ API Gravity Conversion")
         sg = st.number_input("Specific Gravity (γo)", 0.1, 2.0, 0.85)
         if st.button("Compute API", key="btn_api"):
