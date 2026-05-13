@@ -12,7 +12,7 @@ MODEL_NAME = "models/gemini-2.5-flash"
 # CONFIGURACIÓN DE API
 # =========================
 
-api_key = ("AIzaSyCR6ZN9HP7DH6XHc6filuFIT62UmhWDPto")
+api_key = ("AIzaSyBdtFJl9FY6XlmfGh-1GssbKioXC2eJpIw")
 
 if api_key:
     genai.configure(api_key=api_key)
