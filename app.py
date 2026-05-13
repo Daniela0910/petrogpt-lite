@@ -139,7 +139,7 @@ def tab_calculadoras():
             st.metric("Standard API", f"{res}°")
         st.markdown('</div>', unsafe_allow_html=True)
 
-        
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
         st.subheader("📉 Drawdown Status")
         pr = st.number_input("Static Pressure (psi)", value=3000.0, key="pr_dash")
         pwf = st.number_input("Flowing Pressure (psi)", value=2500.0, key="pwf_dash")
@@ -153,7 +153,7 @@ def tab_calculadoras():
         pi_val = calculate_productivity_index(flow, 3000.0, 2500.0)
         st.metric("PI Metric", f"{pi_val} stb/d/psi", delta="Optimum > 0.8")
         st.markdown('</div>', unsafe_allow_html=True)
-
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
         st.subheader("📏 Vertical Gradient")
         p_grad = st.number_input("Observed Pressure (psi)", value=1500.0)
         depth = st.number_input("TVD (ft)", value=5000.0)
