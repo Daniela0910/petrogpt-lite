@@ -1,27 +1,33 @@
-import os
 import streamlit as st
-import google.generativeai as genai
+from utils.gemini_helper import generate_response
 
-# Usamos gemini-1.5-flash: excelente balance entre potencia y gratuidad
-MODEL_NAME = "gemini-1.5-pro"
+def handle_chat():
+    """Gestiona la lógica y la interfaz del chat tcnico."""
+    st.header("사 Chat Tcnico IA")
 
-def generate_response(prompt: str) -> str:
-    """
-    Genera respuesta usando la API Key de los Secrets de Streamlit.
-    """
-    api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+    # Inicializar historial de chat en el estado de la sesión
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    if not api_key:
-        return "⚠️ Error: API Key no encontrada en los Secrets del servidor."
+    # Mostrar mensajes previos
+    for msg in st.session_state.messages:
+        with st.chat_message(msg['role']):
+            st.markdown(msg['content'])
 
-    try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel(model_name=MODEL_NAME)
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        error_msg = str(e)
-        if "404" in error_msg:
-             return f"🤖 Error 404: El modelo '{MODEL_NAME}' no fue encontrado. Verifica la disponibilidad en tu región."
-        return f"🤖 Error: {error_msg}"
+    # Entrada del usuario
+    if prompt := st.chat_input("Consulta tcnica..."):
+        # Guardar y mostrar mensaje del usuario
+        st.session_state.messages.append({'role': 'user', 'content': prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
+        # Generar y mostrar respuesta del asistente
+        with st.chat_message("assistant"):
+            with st.spinner("Consultando a la IA..."):
+                try:
+                    res = generate_response(prompt)
+                    st.markdown(res)
+                    st.session_state.messages.append({'role': 'assistant', 'content': res})
+                except Exception as e:
+                    error_msg = f"사 Error al procesar la respuesta: {str(e)}"
+                    st.error(error_msg)
