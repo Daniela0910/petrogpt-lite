@@ -1,10 +1,14 @@
-from typing import Optional
+from typing import Optional, Tuple
+import numpy as np
+
 
 # ==========================================
 # PROPIEDADES DE FLUIDOS
 # ==========================================
 
-def calculate_api_gravity(density_g_cm3: float) -> Optional[float]:
+def calculate_api_gravity(
+    density_g_cm3: float
+) -> Optional[float]:
     """
     Calcula gravedad API a partir de densidad relativa.
 
@@ -35,7 +39,10 @@ def calculate_drawdown(
         DD = Pr - Pwf
     """
 
-    if reservoir_pressure <= 0 or bottomhole_pressure < 0:
+    if reservoir_pressure <= 0:
+        return None
+
+    if bottomhole_pressure < 0:
         return None
 
     if bottomhole_pressure > reservoir_pressure:
@@ -66,7 +73,7 @@ def calculate_productivity_index(
         bottomhole_pressure
     )
 
-    if not drawdown or drawdown <= 0:
+    if drawdown is None or drawdown <= 0:
         return None
 
     pi = flow_rate / drawdown
@@ -89,7 +96,10 @@ def calculate_pressure_gradient(
         Gradiente = P / TVD
     """
 
-    if pressure < 0 or tvd <= 0:
+    if pressure < 0:
+        return None
+
+    if tvd <= 0:
         return None
 
     gradient = pressure / tvd
@@ -97,9 +107,6 @@ def calculate_pressure_gradient(
     return round(gradient, 4)
 
 
-
-
-import numpy as np
 # ==========================================
 # IPR VOGEL
 # ==========================================
@@ -108,15 +115,21 @@ def calculate_vogel_qmax(
     q_test: float,
     reservoir_pressure: float,
     flowing_pressure: float
-):
+) -> Optional[float]:
     """
     Calcula qmax usando la ecuación de Vogel.
 
     Fórmula:
-    q/qmax = 1 - 0.2(Pwf/Pr) - 0.8(Pwf/Pr)^2
+        q/qmax = 1 - 0.2(Pwf/Pr) - 0.8(Pwf/Pr)^2
     """
 
+    if q_test <= 0:
+        return None
+
     if reservoir_pressure <= 0:
+        return None
+
+    if flowing_pressure < 0:
         return None
 
     if flowing_pressure >= reservoir_pressure:
@@ -139,16 +152,30 @@ def calculate_vogel_qmax(
 def generate_vogel_ipr(
     qmax: float,
     reservoir_pressure: float,
-    points: int = 20
-):
+    points: int = 25
+) -> Tuple[Optional[np.ndarray], Optional[list]]:
     """
-    Genera datos para curva IPR Vogel.
+    Genera datos para construir curva IPR Vogel.
+
+    Returns:
+        pwf_values : np.ndarray
+        q_values   : list
     """
 
-    if qmax <= 0 or reservoir_pressure <= 0:
+    if qmax <= 0:
         return None, None
 
-    pwf_values = np.linspace(0, reservoir_pressure, points)
+    if reservoir_pressure <= 0:
+        return None, None
+
+    if points <= 1:
+        return None, None
+
+    pwf_values = np.linspace(
+        0,
+        reservoir_pressure,
+        points
+    )
 
     q_values = []
 
@@ -163,29 +190,3 @@ def generate_vogel_ipr(
         q_values.append(round(q, 2))
 
     return pwf_values, q_values
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
