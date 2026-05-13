@@ -140,7 +140,6 @@ def tab_calculadoras():
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
-        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
         st.subheader("📉 Drawdown Status")
         pr = st.number_input("Static Pressure (psi)", value=3000.0, key="pr_dash")
         pwf = st.number_input("Flowing Pressure (psi)", value=2500.0, key="pwf_dash")
