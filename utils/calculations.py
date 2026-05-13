@@ -1,5 +1,4 @@
 from typing import Optional
-import numpy as np
 
 # ==========================================
 # PROPIEDADES DE FLUIDOS
@@ -97,8 +96,15 @@ def calculate_pressure_gradient(
 
     return round(gradient, 4)
 
-    
-    def calculate_vogel_qmax(
+
+
+
+import numpy as np
+# ==========================================
+# IPR VOGEL
+# ==========================================
+
+def calculate_vogel_qmax(
     q_test: float,
     reservoir_pressure: float,
     flowing_pressure: float
@@ -157,3 +163,29 @@ def generate_vogel_ipr(
         q_values.append(round(q, 2))
 
     return pwf_values, q_values
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
