@@ -1,4 +1,5 @@
 from typing import Optional
+import numpy as np
 
 # ==========================================
 # PROPIEDADES DE FLUIDOS
@@ -95,3 +96,64 @@ def calculate_pressure_gradient(
     gradient = pressure / tvd
 
     return round(gradient, 4)
+
+    
+    def calculate_vogel_qmax(
+    q_test: float,
+    reservoir_pressure: float,
+    flowing_pressure: float
+):
+    """
+    Calcula qmax usando la ecuación de Vogel.
+
+    Fórmula:
+    q/qmax = 1 - 0.2(Pwf/Pr) - 0.8(Pwf/Pr)^2
+    """
+
+    if reservoir_pressure <= 0:
+        return None
+
+    if flowing_pressure >= reservoir_pressure:
+        return None
+
+    denominator = (
+        1
+        - 0.2 * (flowing_pressure / reservoir_pressure)
+        - 0.8 * ((flowing_pressure / reservoir_pressure) ** 2)
+    )
+
+    if denominator <= 0:
+        return None
+
+    qmax = q_test / denominator
+
+    return round(qmax, 2)
+
+
+def generate_vogel_ipr(
+    qmax: float,
+    reservoir_pressure: float,
+    points: int = 20
+):
+    """
+    Genera datos para curva IPR Vogel.
+    """
+
+    if qmax <= 0 or reservoir_pressure <= 0:
+        return None, None
+
+    pwf_values = np.linspace(0, reservoir_pressure, points)
+
+    q_values = []
+
+    for pwf in pwf_values:
+
+        q = qmax * (
+            1
+            - 0.2 * (pwf / reservoir_pressure)
+            - 0.8 * ((pwf / reservoir_pressure) ** 2)
+        )
+
+        q_values.append(round(q, 2))
+
+    return pwf_values, q_values
