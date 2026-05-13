@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import sys
 import os
+import plotly.graph_objects as go
 
 # Configuración de rutas para módulos
 sys.path.insert(0, os.path.abspath('./utils'))
@@ -12,6 +13,7 @@ from utils.calculations import (
     calculate_drawdown,
     calculate_productivity_index,
     calculate_pressure_gradient
+    generate_vogel_ipr
 )
 from utils.srt_analyzer import process_srt_data, plot_srt
 
@@ -254,6 +256,72 @@ def tab_calculadoras():
         )
 
         st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
+st.subheader("📈 Vogel IPR")
+
+pr_vogel = st.number_input(
+    "Reservoir Pressure Pr (psi)",
+    value=3000.0,
+    key="ipr_pr"
+)
+
+pwf_vogel = st.number_input(
+    "Flowing Pressure Pwf (psi)",
+    value=1500.0,
+    key="ipr_pwf"
+)
+
+q_test = st.number_input(
+    "Test Rate q (stb/d)",
+    value=800.0,
+    key="ipr_q"
+)
+
+if st.button("Generate IPR", key="btn_ipr"):
+
+    qmax = calculate_vogel_qmax(
+        q_test,
+        pr_vogel,
+        pwf_vogel
+    )
+
+    if qmax:
+
+        st.metric("Estimated qmax", f"{qmax} stb/d")
+
+        pwf_vals, q_vals = generate_vogel_ipr(
+            qmax,
+            pr_vogel
+        )
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Scatter(
+                x=q_vals,
+                y=pwf_vals,
+                mode='lines',
+                name='Vogel IPR'
+            )
+        )
+
+        fig.update_layout(
+            title="IPR Curve",
+            xaxis_title="Flow Rate (stb/d)",
+            yaxis_title="Bottomhole Pressure (psi)",
+            template="plotly_white",
+            height=500
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+        st.error("Invalid input data for Vogel calculation.")
+
+st.markdown('</div>', unsafe_allow_html=True)
+
 
 
 # --- TAB SRT ---
