@@ -1,5 +1,3 @@
-app chat gpt
-
 ```python
 import streamlit as st
 import pandas as pd
