@@ -612,7 +612,7 @@ def main():
         st.markdown(
         "<h1 class='main-header'>Chatbox</h1>",
         unsafe_allow_html=True
-    )
+        )
                 st.markdown(
             """
             <p class='sub-header'>
