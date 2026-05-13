@@ -451,12 +451,12 @@ def tab_step_rate():
         with st.spinner("Processing SRT data..."):
 
             df, err = process_srt_data(
-                file=file,
-                fluid_density_ppg=fluid_density,
-                tvd_ft=tvd,
-                tubing_id_in=tubing_id,
-                viscosity_cp=viscosity
-            )
+            file=file,
+            fluid_density_ppg=fluid_density,
+            tubing_length_ft=tvd,
+            tubing_id_in=tubing_id,
+            viscosity_cp=viscosity
+        )
 
         if err:
 
