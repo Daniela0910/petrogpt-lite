@@ -136,7 +136,7 @@ def render_sidebar():
 
         st.image(
             "assets/logo_petrogpt.png",
-            width=70
+            width=200
         )
 
         st.markdown(
