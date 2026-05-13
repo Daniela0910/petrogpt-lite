@@ -3,7 +3,7 @@ import streamlit as st
 import google.generativeai as genai
 
 # Usamos gemini-1.5-flash: excelente balance entre potencia y gratuidad
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-1.5-pro"
 
 def generate_response(prompt: str) -> str:
     """
