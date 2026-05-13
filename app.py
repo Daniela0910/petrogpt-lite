@@ -148,7 +148,22 @@ def render_sidebar():
 
         st.markdown("**Digital Oilfield Suite**")
         st.caption("Engineering Edition v2.5")
+        st.markdown("---")
+        
+        st.markdown("**PetroGPT PRO**")
+        st.caption("PetroGPT PRO es una plataforma integral de ingeniería digital diseñada para ingenieros de petróleos, producción y yacimientos. La aplicación combina herramientas avanzadas de análisis, cálculos de desempeño de pozos, asistencia técnica con inteligencia artificial y diagnóstico de pruebas de inyección en un único entorno profesional.
 
+Desarrollada para aplicaciones de campo y análisis de yacimientos, PetroGPT PRO permite:
+
+Realizar cálculos de ingeniería de producción en tiempo real
+Generar curvas IPR Vogel y análisis de productividad
+Evaluar drawdown, gradientes de presión y propiedades de fluidos
+Procesar y diagnosticar pruebas Step Rate Test (SRT)
+Convertir presiones de cabeza a presión de fondo mediante correcciones hidrostáticas y de fricción
+Visualizar tendencias de fractura e inyección de forma interactiva
+Interactuar con un asistente técnico basado en inteligencia artificial especializado en ingeniería de petróleos
+
+La plataforma está diseñada con una interfaz moderna inspirada en soluciones de Digital Oilfield utilizadas en la industria energética, ofreciendo herramientas rápidas, confiables y prácticas para apoyar la toma de decisiones en operaciones de producción, yacimientos e inyección.")
         st.divider()
 
         st.write("🟢 System: Operational")
