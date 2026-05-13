@@ -2,29 +2,76 @@ import os
 import streamlit as st
 import google.generativeai as genai
 
-# Usamos gemini-1.5-flash: excelente balance entre potencia y gratuidad
-MODEL_NAME = "gemini-pro"
+# =========================
+# CONFIGURACIÓN DEL MODELO
+# =========================
 
-def generate_response(prompt: str) -> str:
-    """
-    Genera respuesta usando la API Key de los Secrets de Streamlit.
-    """
-    api_key = st.secrets.get("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
+MODEL_NAME = "models/gemini-1.5-pro"
 
-    if not api_key:
-        return "⚠️ Error: API Key no encontrada en los Secrets del servidor."
+# =========================
+# CONFIGURACIÓN DE API
+# =========================
+
+api_key = (
+    os.getenv("GEMINI_API_KEY")
+    or st.secrets.get("GEMINI_API_KEY", None)
+)
+
+if api_key:
+    genai.configure(api_key=api_key)
+
+# =========================
+# LISTAR MODELOS DISPONIBLES
+# =========================
+
+def list_available_models():
 
     try:
-        genai.configure(api_key=api_key)
-        for m in genai.list_models():
-          print(m.name)
-        model = genai.GenerativeModel(model_name=MODEL_NAME)
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        error_msg = str(e)
-        if "404" in error_msg:
-             return f"🤖 Error 404: El modelo '{MODEL_NAME}' no fue encontrado. Verifica la disponibilidad en tu región."
-        return f"🤖 Error: {error_msg}"
+        models = genai.list_models()
 
-        return f"🤖 Error inesperado:\n\n{error_msg}"
+        available = []
+
+        for model in models:
+
+            # Solo modelos que soportan generateContent
+            if "generateContent" in model.supported_generation_methods:
+                available.append(model.name)
+
+        return available
+
+    except Exception as e:
+        return [f"Error obteniendo modelos: {str(e)}"]
+
+# =========================
+# GENERAR RESPUESTA
+# =========================
+
+def generate_response(prompt: str) -> str:
+
+    if not api_key:
+        return "⚠️ API Key no encontrada."
+
+    try:
+
+        model = genai.GenerativeModel(MODEL_NAME)
+
+        response = model.generate_content(prompt)
+
+        return response.text
+
+    except Exception as e:
+
+        error_msg = str(e)
+
+        if "404" in error_msg:
+            return f"""
+❌ Modelo no encontrado.
+
+Modelo actual:
+{MODEL_NAME}
+
+Modelos disponibles:
+{list_available_models()}
+"""
+
+        return f"❌ Error Gemini:\n\n{error_msg}"
