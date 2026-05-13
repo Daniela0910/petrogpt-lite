@@ -135,7 +135,7 @@ def render_sidebar():
     with st.sidebar:
 
         st.image(
-            "https://cdn-icons-png.flaticon.com/512/3662/3662860.png",
+            "assets/logo_petrogpt.png",
             width=70
         )
 
