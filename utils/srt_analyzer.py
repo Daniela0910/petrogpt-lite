@@ -2,55 +2,50 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+
 from sklearn.linear_model import LinearRegression
 from typing import Optional, Tuple
 
 
 # =========================================================
-# CÁLCULO DE INTERSECCIÓN (PUNTO DE FRACTURA)
+# CALCULAR INTERSECCIÓN SRT
 # =========================================================
 
 def calculate_intersection(
     df: pd.DataFrame
 ) -> Tuple[Optional[float], Optional[float], Optional[dict]]:
-    """
-    Encuentra el punto de quiebre óptimo entre:
-    - Tendencia matriz
-    - Tendencia fractura
-    """
 
     if len(df) < 4:
         return None, None, None
 
-    df = df.sort_values("rate")
+    df = df.sort_values('rate')
 
     best_r2 = -1
     best_split = None
 
-    # Buscar mejor punto de quiebre
     for i in range(2, len(df) - 2):
 
-        d1 = df.iloc[:i + 1]
+        d1 = df.iloc[:i+1]
         d2 = df.iloc[i:]
 
         reg1 = LinearRegression().fit(
-            d1[["rate"]],
-            d1["bottomhole_pressure"]
+            d1[['rate']],
+            d1['bottomhole_pressure']
         )
 
         reg2 = LinearRegression().fit(
-            d2[["rate"]],
-            d2["bottomhole_pressure"]
+            d2[['rate']],
+            d2['bottomhole_pressure']
         )
 
-        r2_total = (
-            reg1.score(d1[["rate"]], d1["bottomhole_pressure"]) +
-            reg2.score(d2[["rate"]], d2["bottomhole_pressure"])
+        r2 = (
+            reg1.score(d1[['rate']], d1['bottomhole_pressure']) +
+            reg2.score(d2[['rate']], d2['bottomhole_pressure'])
         )
 
-        if r2_total > best_r2:
+        if r2 > best_r2:
 
-            best_r2 = r2_total
+            best_r2 = r2
 
             best_split = (
                 i,
@@ -60,15 +55,14 @@ def calculate_intersection(
 
     if best_split:
 
-        idx, reg1, reg2 = best_split
+        idx, r1, r2 = best_split
 
-        m1 = reg1.coef_[0]
-        b1 = reg1.intercept_
+        m1 = r1.coef_[0]
+        b1 = r1.intercept_
 
-        m2 = reg2.coef_[0]
-        b2 = reg2.intercept_
+        m2 = r2.coef_[0]
+        b2 = r2.intercept_
 
-        # Intersección
         if m1 != m2:
 
             x_int = (b2 - b1) / (m1 - m2)
@@ -76,89 +70,50 @@ def calculate_intersection(
             y_int = m1 * x_int + b1
 
             return x_int, y_int, {
-                "m1": m1,
-                "b1": b1,
-                "m2": m2,
-                "b2": b2
+                'm1': m1,
+                'b1': b1,
+                'm2': m2,
+                'b2': b2
             }
 
     return None, None, None
 
 
 # =========================================================
-# CÁLCULO DE PRESIÓN DE FRICCIÓN
+# CÁLCULO DE PRESIÓN HIDROSTÁTICA
+# =========================================================
+
+def calculate_hydrostatic_pressure(
+    fluid_density_ppg: float,
+    tubing_length_ft: float
+):
+
+    return 0.052 * fluid_density_ppg * tubing_length_ft
+
+
+# =========================================================
+# CÁLCULO DE FRICCIÓN
 # =========================================================
 
 def calculate_friction_pressure(
-    rate_bpd: float,
+    rate_bpm: float,
     tubing_id_in: float,
     tubing_length_ft: float,
-    fluid_density_ppg: float,
     viscosity_cp: float
-) -> float:
-    """
-    Estimación simplificada de pérdida por fricción.
-
-    Modelo simplificado tipo Darcy-Weisbach adaptado
-    para aplicaciones petroleras.
-    """
+):
 
     if tubing_id_in <= 0:
         return 0
 
-    if tubing_length_ft <= 0:
-        return 0
-
-    # Conversión de caudal
-    q_ft3_s = rate_bpd * 5.615 / 86400
-
-    # Área tubing
-    tubing_id_ft = tubing_id_in / 12
-
-    area = np.pi * (tubing_id_ft ** 2) / 4
-
-    velocity = q_ft3_s / area
-
-    # Factor viscosidad simplificado
-    friction_factor = 0.02 + (viscosity_cp / 10000)
-
-    # Presión fricción
-    dp = (
-        friction_factor
-        * tubing_length_ft
-        * fluid_density_ppg
-        * (velocity ** 2)
-        / (25 * tubing_id_ft)
+    friction = (
+        0.0001 *
+        viscosity_cp *
+        tubing_length_ft *
+        (rate_bpm ** 1.85) /
+        (tubing_id_in ** 4.8655)
     )
 
-    return round(dp, 2)
-
-
-# =========================================================
-# CONVERSIÓN WHP -> BHP
-# =========================================================
-
-def calculate_bottomhole_pressure(
-    wellhead_pressure: float,
-    tubing_length_ft: float,
-    fluid_density_ppg: float,
-    friction_pressure: float
-) -> float:
-    """
-    Convierte presión de cabeza a presión de fondo.
-
-    BHP = WHP + Hidrostática + Fricción
-    """
-
-    hydrostatic = 0.052 * fluid_density_ppg * tubing_length_ft
-
-    bhp = (
-        wellhead_pressure
-        + hydrostatic
-        + friction_pressure
-    )
-
-    return round(bhp, 2)
+    return friction
 
 
 # =========================================================
@@ -167,11 +122,11 @@ def calculate_bottomhole_pressure(
 
 def process_srt_data(
     file,
-    tubing_id_in: float,
-    tubing_length_ft: float,
     fluid_density_ppg: float,
+    tubing_length_ft: float,
+    tubing_id_in: float,
     viscosity_cp: float
-) -> Tuple[Optional[pd.DataFrame], Optional[str]]:
+):
 
     try:
 
@@ -180,46 +135,44 @@ def process_srt_data(
         if df.empty:
             return None, "Archivo vacío."
 
-        # Validar columnas requeridas
-        required_cols = ["rate", "pressure"]
+        required_cols = ['rate', 'pressure']
 
         if not all(col in df.columns for col in required_cols):
+            return None, "El CSV debe contener columnas: rate y pressure"
 
-            return None, (
-                "El archivo debe contener columnas:"
-                " rate y pressure"
-            )
+        # =================================================
+        # PRESIÓN HIDROSTÁTICA
+        # =================================================
 
-        # =========================================
-        # CÁLCULO DE PRESIÓN DE FRICCIÓN
-        # =========================================
+        hydrostatic_pressure = calculate_hydrostatic_pressure(
+            fluid_density_ppg,
+            tubing_length_ft
+        )
 
-        friction_list = []
-        bhp_list = []
+        df['hydrostatic_pressure'] = hydrostatic_pressure
 
-        for _, row in df.iterrows():
+        # =================================================
+        # PRESIÓN DE FRICCIÓN
+        # =================================================
 
-            friction = calculate_friction_pressure(
-                rate_bpd=row["rate"],
+        df['friction_pressure'] = df['rate'].apply(
+            lambda q: calculate_friction_pressure(
+                rate_bpm=q,
                 tubing_id_in=tubing_id_in,
                 tubing_length_ft=tubing_length_ft,
-                fluid_density_ppg=fluid_density_ppg,
                 viscosity_cp=viscosity_cp
             )
+        )
 
-            bhp = calculate_bottomhole_pressure(
-                wellhead_pressure=row["pressure"],
-                tubing_length_ft=tubing_length_ft,
-                fluid_density_ppg=fluid_density_ppg,
-                friction_pressure=friction
-            )
+        # =================================================
+        # PRESIÓN DE FONDO
+        # =================================================
 
-            friction_list.append(friction)
-            bhp_list.append(bhp)
-
-        df["friction_pressure"] = friction_list
-
-        df["bottomhole_pressure"] = bhp_list
+        df['bottomhole_pressure'] = (
+            df['pressure'] +
+            df['hydrostatic_pressure'] +
+            df['friction_pressure']
+        )
 
         return df, None
 
@@ -238,89 +191,65 @@ def plot_srt(df: pd.DataFrame):
 
     fig = px.scatter(
         df,
-        x="rate",
-        y="bottomhole_pressure",
-        title="Step Rate Test Analysis"
+        x='rate',
+        y='bottomhole_pressure',
+        title='Step Rate Test Analysis'
     )
-
-    # =========================================
-    # TENDENCIAS
-    # =========================================
 
     if x_int is not None and lines is not None:
 
-        # Línea matriz
         x1 = np.array([
-            df["rate"].min(),
+            df['rate'].min(),
             x_int
         ])
 
-        y1 = (
-            lines["m1"] * x1
-            + lines["b1"]
-        )
+        y1 = lines['m1'] * x1 + lines['b1']
 
         fig.add_trace(
             go.Scatter(
                 x=x1,
                 y=y1,
-                mode="lines",
-                name="Matrix Trend",
-                line=dict(
-                    color="blue",
-                    dash="dash"
-                )
+                mode='lines',
+                name='Matrix Trend'
             )
         )
 
-        # Línea fractura
         x2 = np.array([
             x_int,
-            df["rate"].max()
+            df['rate'].max()
         ])
 
-        y2 = (
-            lines["m2"] * x2
-            + lines["b2"]
-        )
+        y2 = lines['m2'] * x2 + lines['b2']
 
         fig.add_trace(
             go.Scatter(
                 x=x2,
                 y=y2,
-                mode="lines",
-                name="Fracture Trend",
-                line=dict(
-                    color="green",
-                    dash="dash"
-                )
+                mode='lines',
+                name='Fracture Trend'
             )
         )
 
-        # Punto fractura
         fig.add_trace(
             go.Scatter(
                 x=[x_int],
                 y=[y_int],
-                mode="markers",
-                name=f"Fracture Pressure = {round(y_int, 1)} psi",
+                mode='markers',
+                name=f'Fracture Pressure = {round(y_int,1)} psi',
                 marker=dict(
-                    color="red",
-                    size=12,
-                    symbol="x"
+                    size=14,
+                    symbol='x'
                 )
             )
         )
 
-    # =========================================
-    # ESTILO
-    # =========================================
-
     fig.update_layout(
+
         template="plotly_white",
-        xaxis_title="Injection Rate (bbl/d)",
-        yaxis_title="Bottomhole Pressure (psi)",
-        height=650
+
+        xaxis_title="Injection Rate",
+
+        yaxis_title="Bottomhole Pressure (psi)"
     )
 
     return fig
