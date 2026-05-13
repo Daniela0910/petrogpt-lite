@@ -183,7 +183,10 @@ def tab_calculadoras():
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🛢️ API Gravity Conversion")
-
+        st.caption("""
+        Convierte gravedad específica del fluido (Specific Gravity) a gravedad API.
+        Útil para caracterizar crudos y clasificar la calidad del petróleo.
+        """)
         sg = st.number_input(
             "Specific Gravity (γo)",
             min_value=0.1,
@@ -206,7 +209,10 @@ def tab_calculadoras():
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("📉 Drawdown Status")
-
+        st.caption("""
+        Calcula el drawdown del pozo (Pr - Pwf), representando la caída de presión
+        entre el yacimiento y el fondo fluyente del pozo.
+        """)
         pr = st.number_input(
             "Static Pressure Pr (psi)",
             value=3000.0
@@ -238,7 +244,10 @@ def tab_calculadoras():
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🚀 Productivity Index (PI)")
-
+        st.caption("""
+        Evalúa la capacidad productiva del pozo mediante la relación entre tasa de producción
+        y drawdown. Un PI alto indica mejor desempeño del pozo.
+        """)
         flow = st.number_input(
             "Daily Rate q (stb/d)",
             value=500.0
@@ -260,7 +269,11 @@ def tab_calculadoras():
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("📏 Vertical Gradient")
-
+        st.caption("""
+        Calcula el gradiente de presión vertical usando presión observada y TVD.
+        Útil para análisis hidráulico y evaluación de fluidos.
+        """)
+        
         p_grad = st.number_input(
             "Observed Pressure (psi)",
             value=1500.0
@@ -289,6 +302,10 @@ def tab_calculadoras():
     st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
     st.subheader("📈 Vogel IPR")
+    st.caption("""
+    Genera una curva IPR utilizando la ecuación de Vogel para estimar
+    el comportamiento de producción y la capacidad máxima del pozo (qmax).
+    """)
 
     pr_vogel = st.number_input(
         "Reservoir Pressure Pr (psi)",
@@ -384,6 +401,10 @@ def tab_step_rate():
     st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
     st.subheader("⚙️ Well & Fluid Parameters")
+    st.caption("""
+    Ingrese propiedades del fluido y condiciones de tubería utilizadas para convertir
+    presiones de cabeza a presión de fondo mediante correcciones hidráulicas.
+    """)
 
     c1, c2 = st.columns(2)
 
@@ -517,6 +538,10 @@ def tab_step_rate():
                 )
 
                 st.subheader("📋 Processed Data")
+                st.caption("""
+                Tabla procesada del Step Rate Test con correcciones hidrostáticas,
+                fricción y cálculo de presión de fondo.
+                """)
 
                 st.dataframe(
                     df,
@@ -541,6 +566,10 @@ def tab_step_rate():
                 )
 
                 st.subheader("📈 Bottomhole Pressure Analysis")
+                st.caption("""
+                Visualización del comportamiento de presión de fondo vs tasa de inyección
+                para identificar presión de fractura y cambios de tendencia.
+                """)
 
                 fig = plot_srt(df)
 
@@ -582,7 +611,12 @@ def main():
     with t1:
 
         st.markdown(
-            "<h1 class='main-header'>AI Technical Assistant</h1>",
+            """
+            <p class='sub-header'>
+            Asistente técnico especializado en ingeniería de petróleos, producción,
+            yacimientos, pruebas de pozo e inyección.
+            </p>
+            """,
             unsafe_allow_html=True
         )
 
