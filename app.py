@@ -609,7 +609,12 @@ def main():
     ])
 
     with t1:
-         st.markdown(
+         
+        st.markdown(
+        "<h1 class='main-header'>Learning Chat</h1>",
+        unsafe_allow_html=True
+    )
+        st.markdown(
             """
             <p class='sub-header'>
             Asistente técnico especializado en ingeniería de petróleos, producción,
