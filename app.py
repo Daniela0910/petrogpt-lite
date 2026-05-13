@@ -3,6 +3,10 @@ import pandas as pd
 import sys
 import os
 import plotly.graph_objects as go
+from utils.srt_analyzer import (
+    process_srt_data,
+    plot_srt
+)
 
 # Configuración de rutas para módulos
 sys.path.insert(0, os.path.abspath('./utils'))
@@ -351,6 +355,7 @@ def tab_calculadoras():
 
 
 # --- TAB SRT ---
+# --- TAB SRT ---
 def tab_step_rate():
 
     st.markdown(
@@ -358,21 +363,147 @@ def tab_step_rate():
         unsafe_allow_html=True
     )
 
+    st.markdown(
+        """
+        <p class='sub-header'>
+        Convert surface injection pressures to bottomhole pressure
+        using hydrostatic and friction corrections.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # =====================================================
+    # INPUTS HIDRÁULICOS
+    # =====================================================
+
+    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
+    st.subheader("⚙️ Well & Fluid Parameters")
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        fluid_density = st.number_input(
+            "Fluid Density (ppg)",
+            min_value=1.0,
+            value=9.0,
+            step=0.1
+        )
+
+        tubing_id = st.number_input(
+            "Tubing ID (in)",
+            min_value=0.5,
+            value=2.441,
+            step=0.01
+        )
+
+    with c2:
+
+        tvd = st.number_input(
+            "True Vertical Depth TVD (ft)",
+            min_value=100.0,
+            value=8500.0,
+            step=100.0
+        )
+
+        viscosity = st.number_input(
+            "Fluid Viscosity (cp)",
+            min_value=0.1,
+            value=1.0,
+            step=0.1
+        )
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # =====================================================
+    # CARGA DE ARCHIVO
+    # =====================================================
+
+    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
     file = st.file_uploader(
-        "Drag and drop CSV logs",
+        "Upload SRT CSV File",
         type=['csv']
     )
 
+    st.caption("""
+    Required columns:
+    - rate
+    - pressure
+
+    Example:
+    rate,pressure
+    1,1200
+    2,1350
+    3,1500
+    """)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # =====================================================
+    # PROCESAMIENTO
+    # =====================================================
+
     if file:
 
-        df, err = process_srt_data(file)
+        with st.spinner("Processing SRT data..."):
+
+            df, err = process_srt_data(
+                file=file,
+                fluid_density_ppg=fluid_density,
+                tvd_ft=tvd,
+                tubing_id_in=tubing_id,
+                viscosity_cp=viscosity
+            )
 
         if err:
+
             st.error(err)
 
         else:
 
+            # =============================================
+            # MÉTRICAS PRINCIPALES
+            # =============================================
+
+            st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
+            c1, c2, c3 = st.columns(3)
+
+            with c1:
+
+                st.metric(
+                    "Average Hydrostatic Pressure",
+                    f"{df['hydrostatic_pressure'].mean():.1f} psi"
+                )
+
+            with c2:
+
+                st.metric(
+                    "Average Friction Pressure",
+                    f"{df['friction_pressure'].mean():.1f} psi"
+                )
+
+            with c3:
+
+                st.metric(
+                    "Max Bottomhole Pressure",
+                    f"{df['bottomhole_pressure'].max():.1f} psi"
+                )
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+            # =============================================
+            # TABLA + GRÁFICA
+            # =============================================
+
             col_tab, col_graph = st.columns([1, 2])
+
+            # ---------------------------------------------
+            # TABLA
+            # ---------------------------------------------
 
             with col_tab:
 
@@ -381,8 +512,36 @@ def tab_step_rate():
                     unsafe_allow_html=True
                 )
 
+                st.subheader("📋 Processed Data")
+
                 st.dataframe(
                     df,
+                    use_container_width=True,
+                    height=500
+                )
+
+                st.markdown(
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+            # ---------------------------------------------
+            # GRÁFICA
+            # ---------------------------------------------
+
+            with col_graph:
+
+                st.markdown(
+                    '<div class="saas-card">',
+                    unsafe_allow_html=True
+                )
+
+                st.subheader("📈 Bottomhole Pressure Analysis")
+
+                fig = plot_srt(df)
+
+                st.plotly_chart(
+                    fig,
                     use_container_width=True
                 )
 
@@ -391,12 +550,18 @@ def tab_step_rate():
                     unsafe_allow_html=True
                 )
 
-            with col_graph:
+            # =============================================
+            # DESCARGA CSV
+            # =============================================
 
-                st.plotly_chart(
-                    plot_srt(df),
-                    use_container_width=True
-                )
+            csv = df.to_csv(index=False).encode('utf-8')
+
+            st.download_button(
+                label="⬇️ Download Processed SRT",
+                data=csv,
+                file_name="processed_srt.csv",
+                mime="text/csv"
+            )
 
 
 # --- MAIN ---
