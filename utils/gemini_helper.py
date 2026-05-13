@@ -4,7 +4,7 @@ import google.generativeai as genai
 
 # --- MODELO GEMINI ---
 # Modelo recomendado para Streamlit + apps académicas
-MODEL_NAME = "gemini-1.5-flash"
+MODEL_NAME = "gemini-1.5-pro"
 
 
 def generate_response(prompt: str) -> str:
