@@ -1,3 +1,6 @@
+app chat gpt
+
+```python
 import streamlit as st
 import pandas as pd
 import sys
@@ -17,8 +20,8 @@ from utils.srt_analyzer import process_srt_data, plot_srt
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
-    page_title="PetroGPT | Professional Engineering Suite", 
-    page_icon="⚓", 
+    page_title="PetroGPT | Professional Engineering Suite",
+    page_icon="⚓",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -28,7 +31,7 @@ st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
-    html, body, [class*=\"st-\"] {
+    html, body, [class*="st-"] {
         font-family: 'Inter', sans-serif;
         color: #1E293B;
     }
@@ -47,7 +50,7 @@ st.markdown("""
         margin-bottom: 1.5rem;
         transition: all 0.3s ease;
     }
-    
+
     .saas-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
@@ -71,15 +74,15 @@ st.markdown("""
     }
 
     /* Sidebar Professional Dark */
-    section[data-testid=\"stSidebar\"] {
+    section[data-testid="stSidebar"] {
         background-color: #0F172A !important;
     }
-    
-    section[data-testid=\"stSidebar\"] * {
+
+    section[data-testid="stSidebar"] * {
         color: #F8FAFC !important;
     }
 
-    /* Botones de Acción Blue */
+    /* Botones */
     .stButton>button {
         background-color: #2563EB;
         color: white !important;
@@ -90,101 +93,261 @@ st.markdown("""
         width: 100%;
         transition: background 0.2s;
     }
-    
+
     .stButton>button:hover {
         background-color: #1D4ED8;
     }
 
-    /* Tabs Estilo SaaS */
-    .stTabs [data-baseweb=\"tab-list\"] {
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
         background-color: transparent;
     }
 
-    .stTabs [data-baseweb=\"tab\"] {
+    .stTabs [data-baseweb="tab"] {
         background-color: #E2E8F0;
         border-radius: 8px 8px 0 0;
         padding: 10px 20px;
         font-weight: 600;
     }
 
-    .stTabs [aria-selected=\"true\"] {
+    .stTabs [aria-selected="true"] {
         background-color: #2563EB !important;
         color: white !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
+# --- SESSION STATE PARA CHAT ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# --- SIDEBAR ---
 def render_sidebar():
     with st.sidebar:
-        st.image("https://cdn-icons-png.flaticon.com/512/3662/3662860.png", width=70)
-        st.markdown("## PetroGPT <span style='color:#38BDF8'>PRO</span>", unsafe_allow_html=True)
-        st.markdown("--- ")
+        st.image(
+            "https://cdn-icons-png.flaticon.com/512/3662/3662860.png",
+            width=70
+        )
+
+        st.markdown(
+            "## PetroGPT <span style='color:#38BDF8'>PRO</span>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown("---")
+
         st.markdown("**Digital Oilfield Suite**")
         st.caption("Engineering Edition v2.5")
+
         st.divider()
+
         st.write("🟢 System: Operational")
         st.write("🤖 Model: Gemini 1.5 Flash")
 
+
+# --- TAB CALCULADORAS ---
 def tab_calculadoras():
-    st.markdown("<h1 class='main-header'>Analysis & Computation</h1>", unsafe_allow_html=True)
-    st.markdown("<p class='sub-header'>Verified industry standard algorithms for well performance evaluation.</p>", unsafe_allow_html=True)
-    
+
+    st.markdown(
+        "<h1 class='main-header'>Analysis & Computation</h1>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        "<p class='sub-header'>Verified industry standard algorithms for well performance evaluation.</p>",
+        unsafe_allow_html=True
+    )
+
     c1, c2 = st.columns(2)
+
     with c1:
+
+        # --- API GRAVITY ---
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
         st.subheader("🛢️ API Gravity Conversion")
-        sg = st.number_input("Specific Gravity (γo)", 0.1, 2.0, 0.85)
+
+        sg = st.number_input(
+            "Specific Gravity (γo)",
+            min_value=0.1,
+            max_value=2.0,
+            value=0.85
+        )
+
         if st.button("Compute API", key="btn_api"):
+
             res = calculate_api_gravity(sg)
-            st.metric("Standard API", f"{res}°")
+
+            st.metric(
+                "Standard API",
+                f"{res:.2f}°"
+            )
+
         st.markdown('</div>', unsafe_allow_html=True)
 
+        # --- DRAWDOWN ---
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
         st.subheader("📉 Drawdown Status")
-        pr = st.number_input("Static Pressure (psi)", value=3000.0, key="pr_dash")
-        pwf = st.number_input("Flowing Pressure (psi)", value=2500.0, key="pwf_dash")
-        st.metric("Differential Pressure", f"{calculate_drawdown(pr, pwf)} psi")
+
+        pr = st.number_input(
+            "Static Pressure (psi)",
+            value=3000.0,
+            key="pr_dash"
+        )
+
+        pwf = st.number_input(
+            "Flowing Pressure (psi)",
+            value=2500.0,
+            key="pwf_dash"
+        )
+
+        dd = calculate_drawdown(pr, pwf)
+
+        st.metric(
+            "Differential Pressure",
+            f"{dd:.2f} psi"
+        )
+
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c2:
-        
-        st.subheader("🚀 Productivity Index (PI)")
-        flow = st.number_input("Daily Rate (stb/d)", value=500.0)
-        pi_val = calculate_productivity_index(flow, 3000.0, 2500.0)
-        st.metric("PI Metric", f"{pi_val} stb/d/psi", delta="Optimum > 0.8")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
+
+        # --- PRODUCTIVITY INDEX ---
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
-        st.subheader("📏 Vertical Gradient")
-        p_grad = st.number_input("Observed Pressure (psi)", value=1500.0)
-        depth = st.number_input("TVD (ft)", value=5000.0)
-        st.metric("Gradient", f"{calculate_pressure_gradient(p_grad, depth)} psi/ft")
+
+        st.subheader("🚀 Productivity Index (PI)")
+
+        flow = st.number_input(
+            "Daily Rate (stb/d)",
+            value=500.0
+        )
+
+        pi_val = calculate_productivity_index(flow, pr, pwf)
+
+        st.metric(
+            "PI Metric",
+            f"{pi_val:.2f} stb/d/psi",
+            delta="Optimum > 0.8"
+        )
+
         st.markdown('</div>', unsafe_allow_html=True)
 
-def main():
-    render_sidebar()
-    t1, t2, t3 = st.tabs(["💬 Engineering Chat", "🔢 Analysis Suite", "📊 SRT Diagnostics"])
-    
-    with t1: 
-        st.markdown("<h1 class='main-header'>AI Technical Assistant</h1>", unsafe_allow_html=True)
-        handle_chat()
-    
-    with t2: 
-        tab_calculadoras()
-        
-    with t3: 
-        st.markdown("<h1 class='main-header'>Step Rate Test Analytics</h1>", unsafe_allow_html=True)
-        file = st.file_uploader("Drag and drop CSV logs", type=['csv'])
-        if file:
-            df, err = process_srt_data(file)
-            if not err:
-                col_tab, col_graph = st.columns([1, 2])
-                with col_tab: 
-                    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
-                    st.dataframe(df, use_container_width=True)
-                    st.markdown('</div>', unsafe_allow_html=True)
-                with col_graph: 
-                    st.plotly_chart(plot_srt(df), use_container_width=True)
+        # --- PRESSURE GRADIENT ---
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
+        st.subheader("📏 Vertical Gradient")
+
+        p_grad = st.number_input(
+            "Observed Pressure (psi)",
+            value=1500.0
+        )
+
+        depth = st.number_input(
+            "TVD (ft)",
+            value=5000.0
+        )
+
+        grad = calculate_pressure_gradient(p_grad, depth)
+
+        st.metric(
+            "Gradient",
+            f"{grad:.4f} psi/ft"
+        )
+
+        st.markdown('</div>', unsafe_allow_html=True)
+
+
+# --- TAB SRT ---
+def tab_step_rate():
+
+    st.markdown(
+        "<h1 class='main-header'>Step Rate Test Analytics</h1>",
+        unsafe_allow_html=True
+    )
+
+    file = st.file_uploader(
+        "Drag and drop CSV logs",
+        type=['csv']
+    )
+
+    if file:
+
+        df, err = process_srt_data(file)
+
+        if err:
+            st.error(err)
+
+        else:
+
+            col_tab, col_graph = st.columns([1, 2])
+
+            with col_tab:
+
+                st.markdown(
+                    '<div class="saas-card">',
+                    unsafe_allow_html=True
+                )
+
+                st.dataframe(
+                    df,
+                    use_container_width=True
+                )
+
+                st.markdown(
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+            with col_graph:
+
+                st.plotly_chart(
+                    plot_srt(df),
+                    use_container_width=True
+                )
+
+
+# --- MAIN ---
+def main():
+
+    render_sidebar()
+
+    t1, t2, t3 = st.tabs([
+        "💬 Engineering Chat",
+        "🔢 Analysis Suite",
+        "📊 SRT Diagnostics"
+    ])
+
+    # --- CHAT ---
+    with t1:
+
+        st.markdown(
+            "<h1 class='main-header'>AI Technical Assistant</h1>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            "<p class='sub-header'>Ask technical questions about production, reservoirs, well testing and petroleum engineering.</p>",
+            unsafe_allow_html=True
+        )
+
+        # IMPORTANTE:
+        # El problema del chat NO estaba aquí directamente.
+        # Probablemente estaba en utils/chat_handler.py
+        # pero esto asegura que el session_state exista.
+        handle_chat()
+
+    # --- CALCULADORAS ---
+    with t2:
+        tab_calculadoras()
+
+    # --- SRT ---
+    with t3:
+        tab_step_rate()
+
+
+# --- RUN APP ---
 if __name__ == '__main__':
     main()
+```
