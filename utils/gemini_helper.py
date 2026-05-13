@@ -6,7 +6,7 @@ import google.generativeai as genai
 # CONFIGURACIÓN DEL MODELO
 # =========================
 
-MODEL_NAME = "models/gemini-1.5-pro"
+MODEL_NAME = "models/gemini-2.5-flash"
 
 # =========================
 # CONFIGURACIÓN DE API
