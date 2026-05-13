@@ -12,10 +12,7 @@ MODEL_NAME = "models/gemini-1.5-pro"
 # CONFIGURACIÓN DE API
 # =========================
 
-api_key = (
-    os.getenv("GEMINI_API_KEY")
-    or st.secrets.get("GEMINI_API_KEY", None)
-)
+api_key = ("AIzaSyCR6ZN9HP7DH6XHc6filuFIT62UmhWDPto")
 
 if api_key:
     genai.configure(api_key=api_key)
