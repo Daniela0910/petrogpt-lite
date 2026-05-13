@@ -16,74 +16,176 @@ from utils.calculations import (
 from utils.srt_analyzer import process_srt_data, plot_srt
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="PetroGPT Lite | Education Edition", page_icon="🛢️", layout="wide")
+st.set_page_config(
+    page_title="PetroGPT | Professional Engineering Suite", 
+    page_icon="⚓", 
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-# --- ESTILOS PERSONALIZADOS (Look & Feel Académico) ---
+# --- CSS AVANZADO (Estilo SaaS / Landmark / SLB) ---
 st.markdown("""
     <style>
-    .stApp { background-color: #F8F9FA; }
-    .main-header { color: #1E3A8A; font-size: 32px; font-weight: bold; margin-bottom: 10px; }
-    .stButton>button { width: 100%; border-radius: 8px; background-color: #1E3A8A; color: white; }
-    .stExpander { background-color: white; border-radius: 10px; border: 1px solid #E5E7EB; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+    html, body, [class*=\"st-\"] {
+        font-family: 'Inter', sans-serif;
+        color: #1E293B;
+    }
+
+    .stApp {
+        background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+    }
+
+    /* Contenedor de Tarjeta SaaS */
+    .saas-card {
+        background-color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .saas-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+        border-color: #3B82F6;
+    }
+
+    /* Headers Estilizados */
+    .main-header {
+        color: #0F172A;
+        font-weight: 700;
+        font-size: 2.25rem;
+        letter-spacing: -0.025em;
+        margin-top: 1rem;
+    }
+
+    .sub-header {
+        color: #64748B;
+        font-weight: 400;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Sidebar Professional Dark */
+    section[data-testid=\"stSidebar\"] {
+        background-color: #0F172A !important;
+    }
+    
+    section[data-testid=\"stSidebar\"] * {
+        color: #F8FAFC !important;
+    }
+
+    /* Botones de Acción Blue */
+    .stButton>button {
+        background-color: #2563EB;
+        color: white !important;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        width: 100%;
+        transition: background 0.2s;
+    }
+    
+    .stButton>button:hover {
+        background-color: #1D4ED8;
+    }
+
+    /* Tabs Estilo SaaS */
+    .stTabs [data-baseweb=\"tab-list\"] {
+        gap: 10px;
+        background-color: transparent;
+    }
+
+    .stTabs [data-baseweb=\"tab\"] {
+        background-color: #E2E8F0;
+        border-radius: 8px 8px 0 0;
+        padding: 10px 20px;
+        font-weight: 600;
+    }
+
+    .stTabs [aria-selected=\"true\"] {
+        background-color: #2563EB !important;
+        color: white !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 def render_sidebar():
     with st.sidebar:
-        st.title("🎓 PetroGPT Lite")
-        st.markdown("**Portal de Aprendizaje e Ingeniería**")
-        st.info("Esta herramienta asiste a estudiantes en la resolución de problemas técnicos y análisis de pruebas de pozo.")
+        st.image("https://cdn-icons-png.flaticon.com/512/3662/3662860.png", width=70)
+        st.markdown("## PetroGPT <span style='color:#38BDF8'>PRO</span>", unsafe_allow_html=True)
+        st.markdown("--- ")
+        st.markdown("**Digital Oilfield Suite**")
+        st.caption("Engineering Edition v2.5")
         st.divider()
-        st.caption("⚙️ Backend: Gemini 1.5 Flash")
-        st.caption("🔒 Seguridad: Secrets Activados")
+        st.write("🟢 System: Operational")
+        st.write("🤖 Model: Gemini 1.5 Flash")
 
 def tab_calculadoras():
-    st.markdown("<h2 class='main-header'>🔢 Calculadoras de Ingeniería</h2>", unsafe_allow_html=True)
-    st.write("Calcula parámetros críticos de producción y yacimientos con fórmulas estándar.")
+    st.markdown("<h1 class='main-header'>Analysis & Computation</h1>", unsafe_allow_html=True)
+    st.markdown("<p class='sub-header'>Verified industry standard algorithms for well performance evaluation.</p>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.expander("🛢️ Cálculo de Gravedad API", expanded=True):
-            density = st.number_input("Densidad Relativa (g/cm³)", 0.1, 2.0, 0.85, help="La densidad relativa del crudo respecto al agua.")
-            if st.button("Ejecutar Cálculo API"):
-                api = calculate_api_gravity(density)
-                st.metric("Gravedad API", f"{api}°", delta_color="normal")
-        
-        with st.expander("📉 Análisis de Drawdown"):
-            pr_dd = st.number_input("Presión de Yacimiento (Pr)", value=3000.0, key="pr_dd_main")
-            pwf_dd = st.number_input("Presión Fluyente (Pwf)", value=2500.0, key="pwf_dd_main")
-            st.metric("Drawdown (ΔP)", f"{calculate_drawdown(pr_dd, pwf_dd)} psi")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+        st.subheader("🛢️ API Gravity Conversion")
+        sg = st.number_input("Specific Gravity (γo)", 0.1, 2.0, 0.85)
+        if st.button("Compute API", key="btn_api"):
+            res = calculate_api_gravity(sg)
+            st.metric("Standard API", f"{res}°")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    with col2:
-        with st.expander("🚀 Índice de Productividad (PI)", expanded=True):
-            q = st.number_input("Caudal de Producción (stb/d)", value=500.0)
-            pi = calculate_productivity_index(q, 3000.0, 2500.0)
-            st.metric("PI", f"{pi} stb/d/psi", help="Indica la capacidad productiva del pozo.")
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+        st.subheader("📉 Drawdown Status")
+        pr = st.number_input("Static Pressure (psi)", value=3000.0, key="pr_dash")
+        pwf = st.number_input("Flowing Pressure (psi)", value=2500.0, key="pwf_dash")
+        st.metric("Differential Pressure", f"{calculate_drawdown(pr, pwf)} psi")
+        st.markdown('</div>', unsafe_allow_html=True)
 
-def tab_step_rate():
-    st.markdown("<h2 class='main-header'>📈 Analizador SRT Profesional</h2>", unsafe_allow_html=True)
-    st.write("Sube tus datos de presión vs tasa para identificar la presión de fractura.")
-    
-    file = st.file_uploader("Cargar archivo de datos (CSV)", type=['csv'])
-    if file:
-        df, err = process_srt_data(file)
-        if not err:
-            c1, c2 = st.columns([1, 2])
-            with c1: 
-                st.markdown("**Vista de Tabla**")
-                st.dataframe(df, use_container_width=True, height=400)
-            with c2: 
-                st.markdown("**Gráfico de Tendencias**")
-                st.plotly_chart(plot_srt(df), use_container_width=True)
+    with c2:
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+        st.subheader("🚀 Productivity Index (PI)")
+        flow = st.number_input("Daily Rate (stb/d)", value=500.0)
+        pi_val = calculate_productivity_index(flow, 3000.0, 2500.0)
+        st.metric("PI Metric", f"{pi_val} stb/d/psi", delta="Optimum > 0.8")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+        st.subheader("📏 Vertical Gradient")
+        p_grad = st.number_input("Observed Pressure (psi)", value=1500.0)
+        depth = st.number_input("TVD (ft)", value=5000.0)
+        st.metric("Gradient", f"{calculate_pressure_gradient(p_grad, depth)} psi/ft")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def main():
     render_sidebar()
-    t1, t2, t3 = st.tabs(["💬 Chat con IA", "🧮 Calculadoras", "📊 Análisis SRT"])
+    t1, t2, t3 = st.tabs(["💬 Engineering Chat", "🔢 Analysis Suite", "📊 SRT Diagnostics"])
+    
     with t1: 
-        st.markdown("<h2 class='main-header'>🤖 Asistente Técnico</h2>", unsafe_allow_html=True)
+        st.markdown("<h1 class='main-header'>AI Technical Assistant</h1>", unsafe_allow_html=True)
         handle_chat()
-    with t2: tab_calculadoras()
-    with t3: tab_step_rate()
+    
+    with t2: 
+        tab_calculadoras()
+        
+    with t3: 
+        st.markdown("<h1 class='main-header'>Step Rate Test Analytics</h1>", unsafe_allow_html=True)
+        file = st.file_uploader("Drag and drop CSV logs", type=['csv'])
+        if file:
+            df, err = process_srt_data(file)
+            if not err:
+                col_tab, col_graph = st.columns([1, 2])
+                with col_tab: 
+                    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+                    st.dataframe(df, use_container_width=True)
+                    st.markdown('</div>', unsafe_allow_html=True)
+                with col_graph: 
+                    st.plotly_chart(plot_srt(df), use_container_width=True)
 
 if __name__ == '__main__':
     main()
