@@ -8,14 +8,18 @@ import plotly.graph_objects as go
 sys.path.insert(0, os.path.abspath('./utils'))
 
 from utils.chat_handler import handle_chat
+
 from utils.calculations import (
     calculate_api_gravity,
     calculate_drawdown,
     calculate_productivity_index,
-    calculate_pressure_gradient
+    calculate_pressure_gradient,
+    calculate_vogel_qmax,
     generate_vogel_ipr
 )
+
 from utils.srt_analyzer import process_srt_data, plot_srt
+
 
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(
@@ -25,9 +29,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- CSS AVANZADO (Estilo SaaS / Landmark / SLB) ---
+
+# --- CSS AVANZADO ---
 st.markdown("""
     <style>
+
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
 
     html, body, [class*="st-"] {
@@ -39,7 +45,6 @@ st.markdown("""
         background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
     }
 
-    /* Contenedor de Tarjeta SaaS */
     .saas-card {
         background-color: white;
         padding: 1.5rem;
@@ -56,7 +61,6 @@ st.markdown("""
         border-color: #3B82F6;
     }
 
-    /* Headers Estilizados */
     .main-header {
         color: #0F172A;
         font-weight: 700;
@@ -72,7 +76,6 @@ st.markdown("""
         margin-bottom: 2rem;
     }
 
-    /* Sidebar Professional Dark */
     section[data-testid="stSidebar"] {
         background-color: #0F172A !important;
     }
@@ -81,7 +84,6 @@ st.markdown("""
         color: #F8FAFC !important;
     }
 
-    /* Botones */
     .stButton>button {
         background-color: #2563EB;
         color: white !important;
@@ -97,7 +99,6 @@ st.markdown("""
         background-color: #1D4ED8;
     }
 
-    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 10px;
         background-color: transparent;
@@ -114,16 +115,21 @@ st.markdown("""
         background-color: #2563EB !important;
         color: white !important;
     }
+
     </style>
 """, unsafe_allow_html=True)
 
-# --- SESSION STATE PARA CHAT ---
+
+# --- SESSION STATE CHAT ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+
 # --- SIDEBAR ---
 def render_sidebar():
+
     with st.sidebar:
+
         st.image(
             "https://cdn-icons-png.flaticon.com/512/3662/3662860.png",
             width=70
@@ -142,7 +148,7 @@ def render_sidebar():
         st.divider()
 
         st.write("🟢 System: Operational")
-        st.write("🤖 Model: Gemini 1.5 Flash")
+        st.write("🤖 Model: Gemini 2.5 Pro")
 
 
 # --- TAB CALCULADORAS ---
@@ -160,9 +166,12 @@ def tab_calculadoras():
 
     c1, c2 = st.columns(2)
 
+    # =========================================
+    # COLUMNA 1
+    # =========================================
     with c1:
 
-        # --- API GRAVITY ---
+        # --- API ---
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🛢️ API Gravity Conversion")
@@ -174,14 +183,14 @@ def tab_calculadoras():
             value=0.85
         )
 
-        if st.button("Compute API", key="btn_api"):
+        if st.button("Compute API"):
 
-            res = calculate_api_gravity(sg)
+            api = calculate_api_gravity(sg)
 
-            st.metric(
-                "Standard API",
-                f"{res:.2f}°"
-            )
+            if api is not None:
+                st.metric("Standard API", f"{api:.2f}°")
+            else:
+                st.error("Invalid density value.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -191,49 +200,55 @@ def tab_calculadoras():
         st.subheader("📉 Drawdown Status")
 
         pr = st.number_input(
-            "Static Pressure (psi)",
-            value=3000.0,
-            key="pr_dash"
+            "Static Pressure Pr (psi)",
+            value=3000.0
         )
 
         pwf = st.number_input(
-            "Flowing Pressure (psi)",
-            value=2500.0,
-            key="pwf_dash"
+            "Flowing Pressure Pwf (psi)",
+            value=2500.0
         )
 
         dd = calculate_drawdown(pr, pwf)
 
-        st.metric(
-            "Differential Pressure",
-            f"{dd:.2f} psi"
-        )
+        if dd is not None:
+            st.metric(
+                "Differential Pressure",
+                f"{dd:.2f} psi"
+            )
+        else:
+            st.error("Invalid pressure data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # =========================================
+    # COLUMNA 2
+    # =========================================
     with c2:
 
-        # --- PRODUCTIVITY INDEX ---
+        # --- PI ---
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🚀 Productivity Index (PI)")
 
         flow = st.number_input(
-            "Daily Rate (stb/d)",
+            "Daily Rate q (stb/d)",
             value=500.0
         )
 
         pi_val = calculate_productivity_index(flow, pr, pwf)
 
-        st.metric(
-            "PI Metric",
-            f"{pi_val:.2f} stb/d/psi",
-            delta="Optimum > 0.8"
-        )
+        if pi_val is not None:
+            st.metric(
+                "PI Metric",
+                f"{pi_val:.4f} stb/d/psi"
+            )
+        else:
+            st.error("Invalid PI input data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # --- PRESSURE GRADIENT ---
+        # --- GRADIENT ---
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("📏 Vertical Gradient")
@@ -250,78 +265,89 @@ def tab_calculadoras():
 
         grad = calculate_pressure_gradient(p_grad, depth)
 
-        st.metric(
-            "Gradient",
-            f"{grad:.4f} psi/ft"
-        )
+        if grad is not None:
+            st.metric(
+                "Gradient",
+                f"{grad:.4f} psi/ft"
+            )
+        else:
+            st.error("Invalid gradient data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+    # =========================================
+    # VOGEL IPR
+    # =========================================
+    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
-st.subheader("📈 Vogel IPR")
+    st.subheader("📈 Vogel IPR")
 
-pr_vogel = st.number_input(
-    "Reservoir Pressure Pr (psi)",
-    value=3000.0,
-    key="ipr_pr"
-)
-
-pwf_vogel = st.number_input(
-    "Flowing Pressure Pwf (psi)",
-    value=1500.0,
-    key="ipr_pwf"
-)
-
-q_test = st.number_input(
-    "Test Rate q (stb/d)",
-    value=800.0,
-    key="ipr_q"
-)
-
-if st.button("Generate IPR", key="btn_ipr"):
-
-    qmax = calculate_vogel_qmax(
-        q_test,
-        pr_vogel,
-        pwf_vogel
+    pr_vogel = st.number_input(
+        "Reservoir Pressure Pr (psi)",
+        value=3000.0,
+        key="ipr_pr"
     )
 
-    if qmax:
+    pwf_vogel = st.number_input(
+        "Flowing Pressure Pwf (psi)",
+        value=1500.0,
+        key="ipr_pwf"
+    )
 
-        st.metric("Estimated qmax", f"{qmax} stb/d")
+    q_test = st.number_input(
+        "Test Rate q (stb/d)",
+        value=800.0,
+        key="ipr_q"
+    )
 
-        pwf_vals, q_vals = generate_vogel_ipr(
-            qmax,
-            pr_vogel
+    if st.button("Generate IPR"):
+
+        qmax = calculate_vogel_qmax(
+            q_test,
+            pr_vogel,
+            pwf_vogel
         )
 
-        fig = go.Figure()
+        if qmax is not None:
 
-        fig.add_trace(
-            go.Scatter(
-                x=q_vals,
-                y=pwf_vals,
-                mode='lines',
-                name='Vogel IPR'
+            st.metric(
+                "Estimated qmax",
+                f"{qmax:.2f} stb/d"
             )
-        )
 
-        fig.update_layout(
-            title="IPR Curve",
-            xaxis_title="Flow Rate (stb/d)",
-            yaxis_title="Bottomhole Pressure (psi)",
-            template="plotly_white",
-            height=500
-        )
+            pwf_vals, q_vals = generate_vogel_ipr(
+                qmax,
+                pr_vogel
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+            fig = go.Figure()
 
-    else:
-        st.error("Invalid input data for Vogel calculation.")
+            fig.add_trace(
+                go.Scatter(
+                    x=q_vals,
+                    y=pwf_vals,
+                    mode='lines',
+                    name='Vogel IPR'
+                )
+            )
 
-st.markdown('</div>', unsafe_allow_html=True)
+            fig.update_layout(
+                title="IPR Curve",
+                xaxis_title="Flow Rate (stb/d)",
+                yaxis_title="Bottomhole Pressure (psi)",
+                template="plotly_white",
+                height=500
+            )
 
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+        else:
+            st.error("Invalid Vogel input data.")
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # --- TAB SRT ---
@@ -384,7 +410,6 @@ def main():
         "📊 SRT Diagnostics"
     ])
 
-    # --- CHAT ---
     with t1:
 
         st.markdown(
@@ -392,22 +417,11 @@ def main():
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            "<p class='sub-header'>Ask technical questions about production, reservoirs, well testing and petroleum engineering.</p>",
-            unsafe_allow_html=True
-        )
-
-        # IMPORTANTE:
-        # El problema del chat NO estaba aquí directamente.
-        # Probablemente estaba en utils/chat_handler.py
-        # pero esto asegura que el session_state exista.
         handle_chat()
 
-    # --- CALCULADORAS ---
     with t2:
         tab_calculadoras()
 
-    # --- SRT ---
     with t3:
         tab_step_rate()
 
