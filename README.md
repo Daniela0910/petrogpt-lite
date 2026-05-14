@@ -1,78 +1,200 @@
-# PetroGPT Lite 🛢️ — Asistente Inteligente para Ingeniería de Petróleos
+# PetroGPT PRO 🛢️ — Plataforma Inteligente para Ingeniería de Petróleos
 
-**PetroGPT Lite** es una aplicación modular de inteligencia artificial diseñada para optimizar flujos de trabajo en la ingeniería de petróleos (Upstream). Desarrollada con un enfoque académico y profesional, la herramienta combina modelos de lenguaje de última generación (LLMs) con bibliotecas de análisis de datos para ofrecer soluciones técnicas rápidas y precisas.
+**PetroGPT PRO** es una plataforma integral de ingeniería digital desarrollada para optimizar procesos técnicos en las áreas de yacimientos, producción e inyección. La aplicación combina inteligencia artificial, análisis de datos y herramientas especializadas de ingeniería en un único entorno interactivo, permitiendo a los ingenieros realizar diagnósticos, cálculos y evaluaciones operacionales de manera más rápida, precisa y eficiente.
 
-## 🚀 Funcionalidades
+Inspirada en soluciones modernas de **Digital Oilfield**, PetroGPT PRO integra asistentes inteligentes basados en LLMs, análisis visual de datos y módulos técnicos enfocados en apoyar la toma de decisiones en operaciones upstream.
 
-- **Chat Técnico Especializado**: Interacción con la API de Google Gemini (1.5 Flash/Pro) para consultas sobre yacimientos, perforación y producción.
-- **Calculadoras Técnicas**: Implementación modular de fórmulas críticas como Gravedad API, Drawdown, Índice de Productividad (PI) y Gradiente de Presión.
-- **Analizador de Step Rate Test (SRT)**: Procesamiento de archivos CSV para la identificación visual y asistida por IA de la presión de fractura.
-- **Interfaz Profesional**: Diseño basado en Streamlit con navegación por pestañas y visualizaciones interactivas mediante Plotly.
+---
 
-## 🛠️ Tecnologías Utilizadas
+# 🚀 Funcionalidades Principales
 
-- **Lenguaje**: Python 3.x
-- **Framework UI**: [Streamlit](https://streamlit.io/)
-- **Modelos de IA**: [Google Gemini API](https://ai.google.dev/)
-- **Análisis de Datos**: Pandas & Plotly
-- **Seguridad**: Gestión de API Keys mediante variables de entorno.
+## 🤖 Asistente Técnico Inteligente
 
-## 📁 Estructura del Proyecto
+* Integración con modelos de IA avanzados mediante la API de Google Gemini.
+* Consultas técnicas sobre:
+
+  * Ingeniería de yacimientos
+  * Producción
+  * Perforación
+  * Completamiento
+  * Pruebas de pozo
+  * Inyección
+* Generación de explicaciones técnicas y soporte operativo en tiempo real.
+
+---
+
+## 📊 Calculadoras de Ingeniería
+
+Módulo modular de cálculos técnicos para operaciones upstream:
+
+* Gravedad API
+* Drawdown
+* Índice de Productividad (PI)
+* Gradiente de presión
+* Conversión de unidades
+* Cálculos básicos de producción
+* Herramientas de análisis operacional
+
+---
+
+## 📈 Analizador de Step Rate Test (SRT)
+
+Procesamiento inteligente de pruebas de inyección:
+
+* Carga de archivos CSV
+* Visualización interactiva con Plotly
+* Identificación visual de presión de fractura
+* Interpretación asistida por IA
+* Análisis de tendencias y cambios de pendiente
+
+---
+
+## 📉 Análisis de Datos y Tendencias
+
+* Visualización dinámica de datos de producción
+* Gráficas interactivas
+* Evaluación rápida de comportamiento operacional
+* Soporte para interpretación técnica
+
+---
+
+## 🧠 Plataforma Basada en IA y Prompt Engineering
+
+PetroGPT PRO fue desarrollada utilizando técnicas de:
+
+* Prompt Engineering
+* Integración de Large Language Models (LLMs)
+* Automatización de análisis técnicos
+* Diseño modular orientado a escalabilidad
+
+La plataforma demuestra cómo la inteligencia artificial puede integrarse en flujos de trabajo reales de ingeniería de petróleos para aumentar eficiencia, velocidad de análisis y soporte a la toma de decisiones.
+
+---
+
+# 🛠️ Tecnologías Utilizadas
+
+* **Lenguaje:** Python 3.x
+* **Framework UI:** Streamlit
+* **Modelos de IA:** Google Gemini API
+* **Análisis de Datos:** Pandas
+* **Visualización:** Plotly
+* **Arquitectura:** Modular
+* **Gestión de Configuración:** Variables de entorno
+* **Control de Versiones:** Git & GitHub
+
+---
+
+# 📁 Estructura del Proyecto
 
 ```text
-petrogpt-lite/
-├── app.py                # Punto de entrada y lógica de la interfaz
-├── requirements.txt      # Dependencias del sistema
-├── README.md             # Documentación técnica
-├── utils/                # Lógica de negocio modular
-│   ├── calculations.py   # Fórmulas de ingeniería
-│   ├── gemini_helper.py  # Conector con la API de IA
-│   └── srt_analyzer.py   # Lógica de visualización de pruebas
-└── data/                 # Directorio para almacenamiento de datasets
+petrogpt-pro/
+├── app.py
+├── requirements.txt
+├── README.md
+├── utils/
+│   ├── calculations.py
+│   ├── chat_handler.py
+│   ├── gemini_helper.py
+│   ├── srt_analyzer.py
+│   └── production_tools.py
+├── assets/
+├── data/
+└── outputs/
 ```
 
-## 📦 Instalación y Uso Local
+---
 
-1. **Clonar el repositorio**:
-   ```bash
-   git clone https://github.com/Daniela0910/petrogpt-lite.git
-   cd petrogpt-lite
-   ```
+# 📦 Instalación y Uso Local
 
-2. **Instalar dependencias**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## 1️⃣ Clonar el repositorio
 
-3. **Configurar la API Key**:
-   Crea una variable de entorno llamada `GEMINI_API_KEY` o configúrala en el sidebar de la aplicación.
+```bash
+git clone https://github.com/Daniela0910/petrogpt-pro.git
+cd petrogpt-pro
+```
 
-4. **Ejecutar la aplicación**:
-   ```bash
-   streamlit run app.py
-   ```
+---
 
-## ☁️ Despliegue en Streamlit Cloud
+## 2️⃣ Instalar dependencias
 
-1. Sube este proyecto a un repositorio público en GitHub.
-2. Conéctate a [Streamlit Cloud](https://share.streamlit.io/).
-3. En **Secrets**, añade tu llave de Google AI Studio:
-   ```toml
-   GEMINI_API_KEY = "tu_api_key_aqui"
-   ```
-4. ¡Despliega!
+```bash
+pip install -r requirements.txt
+```
 
-## 📝 Ejemplo de Uso
+---
 
-Para utilizar el **Analizador SRT**, carga un archivo CSV con el siguiente formato:
+## 3️⃣ Configurar API Key
+
+Crear una variable de entorno llamada:
+
+```bash
+GEMINI_API_KEY
+```
+
+O configurarla directamente desde la interfaz de la aplicación.
+
+---
+
+## 4️⃣ Ejecutar la aplicación
+
+```bash
+streamlit run app.py
+```
+
+---
+
+# ☁️ Despliegue en Streamlit Cloud
+
+1. Subir el proyecto a GitHub.
+2. Conectar el repositorio con Streamlit Cloud.
+3. Configurar los Secrets:
+
+```toml
+GEMINI_API_KEY = "tu_api_key"
+```
+
+4. Desplegar la aplicación.
+
+---
+
+# 📝 Ejemplo de Uso
+
+## Analizador SRT
+
+Cargar un archivo CSV con el siguiente formato:
 
 | rate | pressure |
-|------|----------|
+| ---- | -------- |
 | 200  | 1500     |
 | 400  | 2800     |
 | 600  | 4200     |
 
-La aplicación generará automáticamente una gráfica de dispersión y permitirá que la IA interprete el comportamiento de la formación.
+La plataforma generará automáticamente:
+
+* Gráficas interactivas
+* Interpretación visual
+* Análisis asistido por IA
+* Identificación de presión de fractura
 
 ---
-*Desarrollado con fines académicos para la Maestría en Ingeniería de Petróleos.*
+
+# 🎯 Objetivo del Proyecto
+
+El propósito de PetroGPT PRO es demostrar la aplicación práctica de inteligencia artificial y automatización en la ingeniería de petróleos, integrando herramientas técnicas y asistentes inteligentes en una plataforma única orientada a la productividad, análisis rápido y soporte a decisiones operacionales.
+
+---
+
+# 👩‍💻 Autora
+
+Desarrollado por Daniela Mejía Jaramillo
+Ingeniera de Petróleos | IA Aplicada | Digital Oilfield | Automatización y Analítica
+
+---
+
+# 📌 Estado del Proyecto
+
+🚧 En desarrollo activo — nuevas funcionalidades y módulos serán incorporados continuamente.
+
+---
+
+*Proyecto desarrollado con fines académicos y profesionales para aplicaciones de Ingeniería de Petróleos y transformación digital en operaciones upstream.*
