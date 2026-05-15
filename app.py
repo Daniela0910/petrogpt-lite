@@ -223,7 +223,7 @@ def tab_calculadoras():
             value=2500.0
         )
 
-         dd, warning = calculate_drawdown(pr, pwf)
+    dd, warning = calculate_drawdown(pr, pwf)
         
         if warning:
             st.warning(warning)
