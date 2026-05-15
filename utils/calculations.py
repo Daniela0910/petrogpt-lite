@@ -39,27 +39,21 @@ def calculate_api_gravity(
         API = (141.5 / SG) - 131.5
     """
 
-    try:
-
-        if density_g_cm3 <= 0:
-            return None, (
-                "La densidad debe ser mayor que 0 g/cm³."
-            )
-
-        warning = validate_range(
-            density_g_cm3,
-            0.5,
-            1.5,
-            "Densidad"
+    if density_g_cm3 <= 0:
+        return None, (
+            "La densidad debe ser mayor que 0 g/cm³."
         )
 
-        api = (141.5 / density_g_cm3) - 131.5
+    warning = validate_range(
+        density_g_cm3,
+        0.5,
+        1.5,
+        "Densidad"
+    )
 
-        return round(api, 2), warning
+    api = (141.5 / density_g_cm3) - 131.5
 
-    except Exception as e:
-
-        return None, f"Error calculando API: {str(e)}"
+    return round(api, 2), warning
 
 
 # ==========================================
@@ -77,38 +71,32 @@ def calculate_drawdown(
         DD = Pr - Pwf
     """
 
-    try:
-
-        if reservoir_pressure <= 0:
-            return None, (
-                "La presión de yacimiento debe ser mayor que 0 psi."
-            )
-
-        if bottomhole_pressure < 0:
-            return None, (
-                "La presión de fondo fluyente no puede ser negativa."
-            )
-
-        if bottomhole_pressure > reservoir_pressure:
-            return None, (
-                "La presión de fondo fluyente no puede ser "
-                "mayor que la presión de yacimiento."
-            )
-
-        warning = validate_range(
-            reservoir_pressure,
-            100,
-            20000,
-            "Presión de yacimiento"
+    if reservoir_pressure <= 0:
+        return None, (
+            "La presión de yacimiento debe ser mayor que 0 psi."
         )
 
-        drawdown = reservoir_pressure - bottomhole_pressure
+    if bottomhole_pressure < 0:
+        return None, (
+            "La presión de fondo fluyente no puede ser negativa."
+        )
 
-        return round(drawdown, 2), warning
+    if bottomhole_pressure > reservoir_pressure:
+        return None, (
+            "La presión de fondo fluyente no puede ser "
+            "mayor que la presión de yacimiento."
+        )
 
-    except Exception as e:
+    warning = validate_range(
+        reservoir_pressure,
+        100,
+        20000,
+        "Presión de yacimiento"
+    )
 
-        return None, f"Error calculando drawdown: {str(e)}"
+    drawdown = reservoir_pressure - bottomhole_pressure
+
+    return round(drawdown, 2), warning
 
 
 def calculate_productivity_index(
@@ -123,41 +111,35 @@ def calculate_productivity_index(
         PI = q / (Pr - Pwf)
     """
 
-    try:
-
-        if flow_rate < 0:
-            return None, (
-                "La tasa de producción no puede ser negativa."
-            )
-
-        drawdown, error = calculate_drawdown(
-            reservoir_pressure,
-            bottomhole_pressure
+    if flow_rate < 0:
+        return None, (
+            "La tasa de producción no puede ser negativa."
         )
 
-        if drawdown is None:
-            return None, error
+    drawdown, error = calculate_drawdown(
+        reservoir_pressure,
+        bottomhole_pressure
+    )
 
-        if drawdown <= 0:
-            return None, (
-                "El drawdown debe ser mayor que cero."
-            )
+    if error and drawdown is None:
+        return None, error
 
-        pi = flow_rate / drawdown
+    if drawdown <= 0:
+        return None, (
+            "El drawdown debe ser mayor que cero."
+        )
 
-        warning = None
+    pi = flow_rate / drawdown
 
-        if pi > 50:
-            warning = (
-                "El PI calculado es muy alto. "
-                "Verifica presiones y tasa de producción."
-            )
+    warning = None
 
-        return round(pi, 4), warning
+    if pi > 50:
+        warning = (
+            "El PI calculado es muy alto. "
+            "Verifica presiones y tasa de producción."
+        )
 
-    except Exception as e:
-
-        return None, f"Error calculando PI: {str(e)}"
+    return round(pi, 4), warning
 
 
 # ==========================================
@@ -175,33 +157,27 @@ def calculate_pressure_gradient(
         Gradiente = P / TVD
     """
 
-    try:
+    if pressure < 0:
+        return None, (
+            "La presión no puede ser negativa."
+        )
 
-        if pressure < 0:
-            return None, (
-                "La presión no puede ser negativa."
-            )
+    if tvd <= 0:
+        return None, (
+            "La TVD debe ser mayor que cero."
+        )
 
-        if tvd <= 0:
-            return None, (
-                "La TVD debe ser mayor que cero."
-            )
+    gradient = pressure / tvd
 
-        gradient = pressure / tvd
+    warning = None
 
-        warning = None
+    if gradient < 0.1 or gradient > 1.2:
+        warning = (
+            "El gradiente calculado está fuera "
+            "de un rango típico (0.1 - 1.2 psi/ft)."
+        )
 
-        if gradient < 0.1 or gradient > 1.2:
-            warning = (
-                "El gradiente calculado está fuera "
-                "de un rango típico (0.1 - 1.2 psi/ft)."
-            )
-
-        return round(gradient, 4), warning
-
-    except Exception as e:
-
-        return None, f"Error calculando gradiente: {str(e)}"
+    return round(gradient, 4), warning
 
 
 # ==========================================
@@ -220,55 +196,49 @@ def calculate_vogel_qmax(
         q/qmax = 1 - 0.2(Pwf/Pr) - 0.8(Pwf/Pr)^2
     """
 
-    try:
-
-        if q_test <= 0:
-            return None, (
-                "La tasa de prueba debe ser mayor que cero."
-            )
-
-        if reservoir_pressure <= 0:
-            return None, (
-                "La presión de yacimiento debe ser mayor que cero."
-            )
-
-        if flowing_pressure < 0:
-            return None, (
-                "La presión fluyente no puede ser negativa."
-            )
-
-        if flowing_pressure >= reservoir_pressure:
-            return None, (
-                "La presión fluyente debe ser menor "
-                "que la presión de yacimiento."
-            )
-
-        denominator = (
-            1
-            - 0.2 * (flowing_pressure / reservoir_pressure)
-            - 0.8 * ((flowing_pressure / reservoir_pressure) ** 2)
+    if q_test <= 0:
+        return None, (
+            "La tasa de prueba debe ser mayor que cero."
         )
 
-        if denominator <= 0:
-            return None, (
-                "La ecuación Vogel produjo un denominador inválido."
-            )
+    if reservoir_pressure <= 0:
+        return None, (
+            "La presión de yacimiento debe ser mayor que cero."
+        )
 
-        qmax = q_test / denominator
+    if flowing_pressure < 0:
+        return None, (
+            "La presión fluyente no puede ser negativa."
+        )
 
-        warning = None
+    if flowing_pressure >= reservoir_pressure:
+        return None, (
+            "La presión fluyente debe ser menor "
+            "que la presión de yacimiento."
+        )
 
-        if qmax > 100000:
-            warning = (
-                "El qmax calculado es extremadamente alto. "
-                "Verifica unidades y datos de entrada."
-            )
+    denominator = (
+        1
+        - 0.2 * (flowing_pressure / reservoir_pressure)
+        - 0.8 * ((flowing_pressure / reservoir_pressure) ** 2)
+    )
 
-        return round(qmax, 2), warning
+    if denominator <= 0:
+        return None, (
+            "La ecuación Vogel produjo un denominador inválido."
+        )
 
-    except Exception as e:
+    qmax = q_test / denominator
 
-        return None, f"Error calculando qmax Vogel: {str(e)}"
+    warning = None
+
+    if qmax > 100000:
+        warning = (
+            "El qmax calculado es extremadamente alto. "
+            "Verifica unidades y datos de entrada."
+        )
+
+    return round(qmax, 2), warning
 
 
 def generate_vogel_ipr(
@@ -285,53 +255,45 @@ def generate_vogel_ipr(
         warning    : str
     """
 
-    try:
-
-        if qmax <= 0:
-            return None, None, (
-                "qmax debe ser mayor que cero."
-            )
-
-        if reservoir_pressure <= 0:
-            return None, None, (
-                "La presión de yacimiento debe ser mayor que cero."
-            )
-
-        if points <= 1:
-            return None, None, (
-                "El número de puntos debe ser mayor que 1."
-            )
-
-        pwf_values = np.linspace(
-            0,
-            reservoir_pressure,
-            points
-        )
-
-        q_values = []
-
-        for pwf in pwf_values:
-
-            q = qmax * (
-                1
-                - 0.2 * (pwf / reservoir_pressure)
-                - 0.8 * ((pwf / reservoir_pressure) ** 2)
-            )
-
-            q_values.append(round(q, 2))
-
-        warning = None
-
-        if reservoir_pressure > 20000:
-            warning = (
-                "La presión de yacimiento es muy alta. "
-                "Verifica unidades."
-            )
-
-        return pwf_values, q_values, warning
-
-    except Exception as e:
-
+    if qmax <= 0:
         return None, None, (
-            f"Error generando curva IPR: {str(e)}"
+            "qmax debe ser mayor que cero."
         )
+
+    if reservoir_pressure <= 0:
+        return None, None, (
+            "La presión de yacimiento debe ser mayor que cero."
+        )
+
+    if points <= 1:
+        return None, None, (
+            "El número de puntos debe ser mayor que 1."
+        )
+
+    pwf_values = np.linspace(
+        0,
+        reservoir_pressure,
+        points
+    )
+
+    q_values = []
+
+    for pwf in pwf_values:
+
+        q = qmax * (
+            1
+            - 0.2 * (pwf / reservoir_pressure)
+            - 0.8 * ((pwf / reservoir_pressure) ** 2)
+        )
+
+        q_values.append(round(q, 2))
+
+    warning = None
+
+    if reservoir_pressure > 20000:
+        warning = (
+            "La presión de yacimiento es muy alta. "
+            "Verifica unidades."
+        )
+
+    return pwf_values, q_values, warning
