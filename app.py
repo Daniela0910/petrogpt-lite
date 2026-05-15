@@ -1,6 +1,182 @@
+import streamlit as st
+import pandas as pd
+import sys
+import os
+import plotly.graph_objects as go
+
+from utils.srt_analyzer import (
+    process_srt_data,
+    plot_srt
+)
+
+# =========================================
+# CONFIGURACIÓN DE RUTAS
+# =========================================
+
+sys.path.insert(0, os.path.abspath('./utils'))
+
+from utils.chat_handler import handle_chat
+
+from utils.calculations import (
+    calculate_api_gravity,
+    calculate_drawdown,
+    calculate_productivity_index,
+    calculate_pressure_gradient,
+    calculate_vogel_qmax,
+    generate_vogel_ipr
+)
+
+# =========================================
+# CONFIGURACIÓN DE PÁGINA
+# =========================================
+
+st.set_page_config(
+    page_title="PetroGPT | Professional Engineering Suite",
+    page_icon="⚓",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# =========================================
+# CSS
+# =========================================
+
+st.markdown("""
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+html, body, [class*="st-"] {
+    font-family: 'Inter', sans-serif;
+    color: #1E293B;
+}
+
+.stApp {
+    background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+}
+
+.saas-card {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.saas-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+    border-color: #3B82F6;
+}
+
+.main-header {
+    color: #0F172A;
+    font-weight: 700;
+    font-size: 2.25rem;
+    letter-spacing: -0.025em;
+    margin-top: 1rem;
+}
+
+.sub-header {
+    color: #64748B;
+    font-weight: 400;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+section[data-testid="stSidebar"] {
+    background-color: #0F172A !important;
+}
+
+section[data-testid="stSidebar"] * {
+    color: #F8FAFC !important;
+}
+
+.stButton>button {
+    background-color: #2563EB;
+    color: white !important;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.stButton>button:hover {
+    background-color: #1D4ED8;
+}
+
+.stTabs [data-baseweb="tab-list"] {
+    gap: 10px;
+    background-color: transparent;
+}
+
+.stTabs [data-baseweb="tab"] {
+    background-color: #E2E8F0;
+    border-radius: 8px 8px 0 0;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: #2563EB !important;
+    color: white !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================
+# SESSION STATE
+# =========================================
+
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# =========================================
+# SIDEBAR
+# =========================================
+
+def render_sidebar():
+
+    with st.sidebar:
+
+        st.image(
+            "assets/logo_petrogpt.png",
+            width=200
+        )
+
+        st.markdown(
+            "## PetroGPT <span style='color:#38BDF8'>PRO</span>",
+            unsafe_allow_html=True
+        )
+
+        st.markdown("---")
+
+        st.markdown("**Digital Oilfield Suite**")
+        st.caption("Engineering Edition v2.5")
+
+        st.markdown("---")
+
+        st.markdown("**PetroGPT PRO**")
+
+        st.caption("""
+        PetroGPT PRO es una plataforma integral de ingeniería digital
+        diseñada para ingenieros de petróleos, producción y yacimientos.
+        """)
+
+        st.divider()
+
+        st.write("🟢 System: Operational")
+        st.write("🤖 Model: Gemini 2.5 Pro")
+
 # =========================================
 # TAB CALCULADORAS
 # =========================================
+
 def tab_calculadoras():
 
     st.markdown(
@@ -15,22 +191,16 @@ def tab_calculadoras():
 
     c1, c2 = st.columns(2)
 
-    # =========================================
+    # =====================================
     # COLUMNA 1
-    # =========================================
+    # =====================================
+
     with c1:
 
-        # -------------------------------------
-        # API GRAVITY
-        # -------------------------------------
+        # API
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🛢️ API Gravity Conversion")
-
-        st.caption("""
-        Convierte gravedad específica del fluido (Specific Gravity)
-        a gravedad API.
-        """)
 
         sg = st.number_input(
             "Specific Gravity (γo)",
@@ -47,29 +217,19 @@ def tab_calculadoras():
                 st.warning(warning)
 
             if api is not None:
-
                 st.metric(
                     "Standard API",
                     f"{api:.2f}°"
                 )
-
             else:
                 st.error("Invalid density value.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------
         # DRAWDOWN
-        # -------------------------------------
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("📉 Drawdown Status")
-
-        st.caption("""
-        Calcula el drawdown del pozo (Pr - Pwf),
-        representando la caída de presión entre
-        el yacimiento y el fondo fluyente.
-        """)
 
         pr = st.number_input(
             "Static Pressure Pr (psi)",
@@ -87,34 +247,25 @@ def tab_calculadoras():
             st.warning(warning)
 
         if dd is not None:
-
             st.metric(
                 "Differential Pressure",
                 f"{dd:.2f} psi"
             )
-
         else:
-            st.error("Invalid pressure data.")
+            st.error("Invalid drawdown data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================
+    # =====================================
     # COLUMNA 2
-    # =========================================
+    # =====================================
+
     with c2:
 
-        # -------------------------------------
-        # PRODUCTIVITY INDEX
-        # -------------------------------------
+        # PI
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("🚀 Productivity Index (PI)")
-
-        st.caption("""
-        Evalúa la capacidad productiva del pozo
-        mediante la relación entre tasa de producción
-        y drawdown.
-        """)
 
         flow = st.number_input(
             "Daily Rate q (stb/d)",
@@ -131,28 +282,19 @@ def tab_calculadoras():
             st.warning(warning)
 
         if pi_val is not None:
-
             st.metric(
                 "PI Metric",
                 f"{pi_val:.4f} stb/d/psi"
             )
-
         else:
             st.error("Invalid PI input data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-        # -------------------------------------
-        # PRESSURE GRADIENT
-        # -------------------------------------
+        # GRADIENT
         st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
         st.subheader("📏 Vertical Gradient")
-
-        st.caption("""
-        Calcula el gradiente de presión vertical
-        usando presión observada y TVD.
-        """)
 
         p_grad = st.number_input(
             "Observed Pressure (psi)",
@@ -173,30 +315,22 @@ def tab_calculadoras():
             st.warning(warning)
 
         if grad is not None:
-
             st.metric(
                 "Gradient",
                 f"{grad:.4f} psi/ft"
             )
-
         else:
             st.error("Invalid gradient data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # =========================================
+    # =====================================
     # VOGEL IPR
-    # =========================================
+    # =====================================
+
     st.markdown('<div class="saas-card">', unsafe_allow_html=True)
 
     st.subheader("📈 Vogel IPR")
-
-    st.caption("""
-    Genera una curva IPR utilizando
-    la ecuación de Vogel para estimar
-    el comportamiento de producción
-    y la capacidad máxima del pozo.
-    """)
 
     pr_vogel = st.number_input(
         "Reservoir Pressure Pr (psi)",
@@ -270,3 +404,128 @@ def tab_calculadoras():
             st.error("Invalid Vogel input data.")
 
     st.markdown('</div>', unsafe_allow_html=True)
+
+# =========================================
+# TAB STEP RATE
+# =========================================
+
+def tab_step_rate():
+
+    st.markdown(
+        "<h1 class='main-header'>Step Rate Test Analytics</h1>",
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        """
+        <p class='sub-header'>
+        Convert surface injection pressures to bottomhole pressure
+        using hydrostatic and friction corrections.
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('<div class="saas-card">', unsafe_allow_html=True)
+
+    c1, c2 = st.columns(2)
+
+    with c1:
+
+        fluid_density = st.number_input(
+            "Fluid Density (ppg)",
+            min_value=1.0,
+            value=9.0
+        )
+
+        tubing_id = st.number_input(
+            "Tubing ID (in)",
+            min_value=0.5,
+            value=2.441
+        )
+
+    with c2:
+
+        tvd = st.number_input(
+            "True Vertical Depth TVD (ft)",
+            min_value=100.0,
+            value=8500.0
+        )
+
+        viscosity = st.number_input(
+            "Fluid Viscosity (cp)",
+            min_value=0.1,
+            value=1.0
+        )
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    file = st.file_uploader(
+        "Upload SRT CSV File",
+        type=['csv']
+    )
+
+    if file:
+
+        with st.spinner("Processing SRT data..."):
+
+            df, err = process_srt_data(
+                file=file,
+                fluid_density_ppg=fluid_density,
+                tubing_length_ft=tvd,
+                tubing_id_in=tubing_id,
+                viscosity_cp=viscosity
+            )
+
+        if err:
+            st.error(err)
+
+        else:
+
+            fig = plot_srt(df)
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
+
+            st.dataframe(
+                df,
+                use_container_width=True
+            )
+
+# =========================================
+# MAIN
+# =========================================
+
+def main():
+
+    render_sidebar()
+
+    t1, t2, t3 = st.tabs([
+        "💬 Engineering Chat",
+        "🔢 Analysis Suite",
+        "📊 SRT Diagnostics"
+    ])
+
+    with t1:
+
+        st.markdown(
+            "<h1 class='main-header'>Learning Chat</h1>",
+            unsafe_allow_html=True
+        )
+
+        handle_chat()
+
+    with t2:
+        tab_calculadoras()
+
+    with t3:
+        tab_step_rate()
+
+# =========================================
+# RUN APP
+# =========================================
+
+if __name__ == '__main__':
+    main()
