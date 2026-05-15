@@ -222,12 +222,11 @@ def tab_calculadoras():
             "Flowing Pressure Pwf (psi)",
             value=2500.0
         )
+        dd, warning = calculate_drawdown(pr, pwf)
 
-    dd, warning = calculate_drawdown(pr, pwf)
-        
         if warning:
             st.warning(warning)
-        
+
         if dd is not None:
             st.metric(
                 "Differential Pressure",
