@@ -223,15 +223,16 @@ def tab_calculadoras():
             value=2500.0
         )
 
-        dd = calculate_drawdown(pr, pwf)
-
+         dd, warning = calculate_drawdown(pr, pwf)
+        
+        if warning:
+            st.warning(warning)
+        
         if dd is not None:
             st.metric(
                 "Differential Pressure",
                 f"{dd:.2f} psi"
             )
-        else:
-            st.error("Invalid pressure data.")
 
         st.markdown('</div>', unsafe_allow_html=True)
 
