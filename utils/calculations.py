@@ -121,7 +121,7 @@ def calculate_productivity_index(
         bottomhole_pressure
     )
 
-    if error and drawdown is None:
+    if drawdown is None:
         return None, error
 
     if drawdown <= 0:
